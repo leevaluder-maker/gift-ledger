@@ -1,8 +1,9 @@
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { Sparkles, Loader2, AlertCircle, CheckCircle, FileSpreadsheet, Type, Mic, Upload, X } from 'lucide-vue-next'
+import { ref } from 'vue'
+import { Sparkles, Loader2, AlertCircle, CheckCircle, FileSpreadsheet, Type, Upload, X } from 'lucide-vue-next'
 import { useSettingsStore } from '../stores/settingsStore'
 import { useRecordStore } from '../stores/recordStore'
+import { matchOccasion } from '../utils/occasionMatcher.js'
 import * as XLSX from 'xlsx'
 
 const emit = defineEmits(['close', 'imported'])
@@ -12,89 +13,10 @@ const recordStore = useRecordStore()
 const activeMode = ref('text') // 'text' | 'excel'
 const inputText = ref('')
 const isLoading = ref(false)
-const isListening = ref(false)
 const error = ref('')
 const success = ref('')
 const parsedRecords = ref([])
 const fileInput = ref(null)
-
-let recognition = null
-
-// 初始化语音识别
-onMounted(() => {
-  if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition
-    recognition = new SpeechRecognition()
-    recognition.lang = 'zh-CN'
-    recognition.continuous = true
-    recognition.interimResults = true
-
-    recognition.onresult = (event) => {
-      let finalTranscript = ''
-      let interimTranscript = ''
-
-      for (let i = event.resultIndex; i < event.results.length; i++) {
-        const transcript = event.results[i][0].transcript
-        if (event.results[i].isFinal) {
-          finalTranscript += transcript
-        } else {
-          interimTranscript += transcript
-        }
-      }
-
-      if (finalTranscript) {
-        inputText.value += finalTranscript
-      }
-    }
-
-    recognition.onerror = (event) => {
-      console.error('语音识别错误:', event.error)
-      isListening.value = false
-      if (event.error === 'not-allowed') {
-        error.value = '无法访问麦克风，请检查权限设置'
-      } else if (event.error === 'no-speech') {
-        error.value = '未检测到语音，请重试'
-      } else {
-        error.value = '语音识别错误: ' + event.error
-      }
-    }
-
-    recognition.onend = () => {
-      isListening.value = false
-    }
-  }
-})
-
-// 组件卸载时清理语音识别
-onUnmounted(() => {
-  if (recognition && isListening.value) {
-    recognition.stop()
-  }
-  recognition = null
-})
-
-// 切换语音识别
-const toggleListening = async () => {
-  if (!recognition) {
-    error.value = '您的浏览器不支持语音识别功能'
-    return
-  }
-
-  if (isListening.value) {
-    recognition.stop()
-    isListening.value = false
-  } else {
-    try {
-      error.value = ''
-      recognition.start()
-      isListening.value = true
-    } catch (e) {
-      console.error('语音识别启动错误:', e)
-      error.value = '语音识别启动失败，请检查麦克风权限'
-      isListening.value = false
-    }
-  }
-}
 
 // 处理Excel文件上传
 const handleFileUpload = (event) => {
@@ -205,9 +127,17 @@ const parseWithAI = async () => {
       }
     }
 
-    // 验证记录
+    // 验证记录并智能匹配事由
     const validRecords = records.filter(r => {
       return r.amount && r.name && r.date
+    }).map(r => {
+      // 智能匹配事由分类
+      const { occasion, occasionType } = matchOccasion(r.occasion)
+      return {
+        ...r,
+        occasion,
+        occasionType: r.occasionType || occasionType
+      }
     })
 
     if (validRecords.length === 0) {
@@ -450,7 +380,7 @@ const getOccasionTypeText = (type) => {
           :class="activeMode === 'text' ? 'bg-[#ffdad7] text-[#990f19]' : 'text-[#5a403e] hover:bg-[#f0eded]'"
         >
           <Type :size="18" />
-          打字 / 语音
+          文字输入
         </button>
         <button
           @click="activeMode = 'excel'; error = ''; success = ''; parsedRecords = []; inputText = ''"
@@ -501,29 +431,15 @@ const getOccasionTypeText = (type) => {
           </div>
         </div>
 
-        <!-- Text/Voice Mode -->
+        <!-- Text Mode -->
         <div v-if="activeMode === 'text'" class="space-y-3 sm:space-y-4">
           <div class="relative">
             <textarea
               v-model="inputText"
-              placeholder="请描述礼金记录...&#10;&#10;例如：&#10;张三 500元 结婚礼金 2024年1月15日&#10;李四 1000元 满月酒 2024年2月20日&#10;王五 800元 六十大寿&#10;...&#10;&#10;或点击麦克风按钮开始语音输入"
+              placeholder="请描述礼金记录...&#10;&#10;例如：&#10;张三 500元 结婚礼金 2024年1月15日&#10;李四 1000元 满月酒 2024年2月20日&#10;王五 800元 六十大寿&#10;..."
               class="w-full h-40 sm:h-48 p-3 sm:p-4 bg-[#f0eded] border-none rounded-2xl text-base sm:text-lg resize-none focus:ring-2 focus:ring-[#bc2c2e] outline-none"
             />
-            <button
-              @click="toggleListening"
-              :class="[
-                'absolute bottom-3 sm:bottom-4 right-3 sm:right-4 p-2.5 sm:p-3 rounded-full transition-all',
-                isListening ? 'bg-red-500 text-white animate-pulse' : 'bg-[#990f19] text-white hover:bg-[#bc2c2e]'
-              ]"
-              :title="isListening ? '停止录音' : '开始语音输入'"
-            >
-              <Mic :size="20" />
-            </button>
           </div>
-          <p v-if="isListening" class="text-xs sm:text-sm text-[#990f19] font-bold flex items-center gap-2">
-            <span class="w-2 h-2 bg-red-500 rounded-full animate-pulse"></span>
-            正在录音，请说话...
-          </p>
         </div>
 
         <!-- Error -->

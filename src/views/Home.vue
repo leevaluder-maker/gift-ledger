@@ -1,9 +1,11 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import { PlusCircle, Share2, Wallet, Sparkles, ChevronRight, X, CalendarIcon } from 'lucide-vue-next'
 import { useRecordStore } from '../stores/recordStore'
 import { useCustomOccasionsStore } from '../stores/customOccasionsStore'
+import { Share } from '@capacitor/share'
+import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
 import * as XLSX from 'xlsx'
 import AiImport from './AiImport.vue'
 
@@ -27,36 +29,23 @@ const selectedCategory = ref(null)
 const customOccasionInput = ref('')
 const showCustomInput = ref(false)
 
-const totalReceived = ref(0)
-const pendingAmount = ref(0)
-
-const loadData = () => {
-  const records = recordStore.getAllRecords()
-
-  // 计算统计数据（只计算收礼）
-  totalReceived.value = records
+// 使用 computed 响应式计算统计数据
+const totalReceived = computed(() => {
+  return recordStore.records.value
     .filter((r) => r.type === 'received')
     .reduce((sum, r) => sum + r.amount, 0)
+})
 
-  // 计算待还礼金额
-  pendingAmount.value = records
+const pendingAmount = computed(() => {
+  return recordStore.records.value
     .filter((r) => r.type === 'received' && r.status === 'pending')
     .reduce((sum, r) => sum + r.amount, 0)
-}
+})
 
-const formatAmount = (amount) => {
-  return new Intl.NumberFormat('zh-CN', {
-    style: 'currency',
-    currency: 'CNY',
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 0,
-  })
-    .format(amount)
-    .replace('¥', '¥ ')
-}
+const recordCount = computed(() => recordStore.records.value.length)
 
-const exportData = () => {
-  const records = recordStore.getAllRecords()
+const exportData = async () => {
+  const records = recordStore.records.value
   if (records.length === 0) {
     alert('暂无记录可导出')
     return
@@ -91,7 +80,49 @@ const exportData = () => {
   const today = new Date()
   const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`
   const filename = `极简账本数据备份${dateStr}.xlsx`
-  XLSX.writeFile(wb, filename)
+
+  try {
+    // 生成 Excel 文件的 base64
+    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
+
+    // 使用 Capacitor Filesystem 保存文件
+    const result = await Filesystem.writeFile({
+      path: filename,
+      data: wbout,
+      directory: Directory.Cache,
+    })
+
+    // 使用 Capacitor Share 分享文件
+    await Share.share({
+      title: '导出礼金记录',
+      text: '礼金账本数据备份',
+      url: result.uri,
+      dialogTitle: '导出礼金记录',
+    })
+  } catch (e) {
+    console.error('导出失败:', e)
+    // 如果分享失败，尝试备用方案
+    try {
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+      const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
+      downloadBlob(blob, filename)
+    } catch (e2) {
+      console.error('备用导出也失败:', e2)
+      alert('导出失败，请重试')
+    }
+  }
+}
+
+// 备用下载方法（用于 Web 环境）
+const downloadBlob = (blob, filename) => {
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
 }
 
 // 事由选择
@@ -163,9 +194,8 @@ const handleSave = () => {
   showCustomInput.value = false
   customOccasionInput.value = ''
 
-  // 关闭表单并刷新数据
+  // 关闭表单
   showAddForm.value = false
-  loadData()
 }
 
 // 打开添加表单
@@ -182,7 +212,7 @@ const closeAddForm = () => {
 }
 
 onMounted(() => {
-  loadData()
+  // 数据通过 computed 自动响应式更新
 })
 </script>
 
@@ -214,7 +244,7 @@ onMounted(() => {
           <Sparkles :size="18" />
           <span class="font-bold text-xs sm:text-sm">记录条数</span>
         </div>
-        <div class="text-lg sm:text-xl font-black truncate text-[#1b1c1c]">{{ recordStore.getAllRecords().length }} 条</div>
+        <div class="text-lg sm:text-xl font-black truncate text-[#1b1c1c]">{{ recordCount }} 条</div>
       </div>
     </div>
 
@@ -253,7 +283,7 @@ onMounted(() => {
       </div>
       <div class="text-center text-[#5a403e] text-xs sm:text-sm space-y-1">
         <p>作者：沅·Luminous</p>
-        <p>版本号：v1.0.0</p>
+        <p>版本号：v1.0.2</p>
       </div>
     </div>
 
@@ -261,7 +291,6 @@ onMounted(() => {
     <AiImport
       v-if="showAiImport"
       @close="showAiImport = false"
-      @imported="loadData"
     />
 
     <!-- Add Record Modal -->

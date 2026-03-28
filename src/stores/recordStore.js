@@ -7,32 +7,33 @@ const STORAGE_KEY = 'minimal_ledger_user_records'
  * @typedef {import('../types/index.js').PersonSummary} PersonSummary
  */
 
-export function useRecordStore() {
-  const records = ref(/** @type {LedgerRecord[]} */([]))
+// 单例状态 - 在函数外部定义，确保所有组件共享同一状态
+const records = ref(/** @type {LedgerRecord[]} */([]))
 
-  // 从localStorage加载用户数据
-  const loadRecords = () => {
-    const stored = localStorage.getItem(STORAGE_KEY)
-    if (stored) {
-      try {
-        records.value = JSON.parse(stored)
-      } catch (e) {
-        console.error('Failed to parse records:', e)
-        records.value = []
-      }
-    } else {
+// 从localStorage加载用户数据
+const loadRecords = () => {
+  const stored = localStorage.getItem(STORAGE_KEY)
+  if (stored) {
+    try {
+      records.value = JSON.parse(stored)
+    } catch (e) {
+      console.error('Failed to parse records:', e)
       records.value = []
     }
+  } else {
+    records.value = []
   }
+}
 
-  // 保存用户数据到localStorage
-  const saveRecords = () => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(records.value))
-  }
+// 保存用户数据到localStorage
+const saveRecords = () => {
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(records.value))
+}
 
-  // 初始化加载
-  loadRecords()
+// 初始化加载（只执行一次）
+loadRecords()
 
+export function useRecordStore() {
   /**
    * 获取所有记录
    * @returns {LedgerRecord[]}

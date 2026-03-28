@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(ren \"opencode room\" \"gift-ledger\")",
+      "Bash(npm run:*)",
+      "Bash(rm -rf android/app/src/main/assets/public/assets/*)",
+      "Bash(rm -f android/app/src/main/assets/public/favicon.svg android/app/src/main/assets/public/icons.svg android/app/src/main/assets/public/index.html)",
+      "Bash(cp -r dist/* android/app/src/main/assets/public/)",
+      "Bash(npx cap:*)",
+      "Bash(echo:*)",
+      "Bash(npm install:*)"
+    ]
+  }
+}

@@ -1,13 +1,16 @@
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { ArrowLeft, Trash2 } from 'lucide-vue-next'
+import { ArrowLeft, Trash2, ChevronRight } from 'lucide-vue-next'
 import { useRecordStore } from '../stores/recordStore'
+import { useCustomOccasionsStore } from '../stores/customOccasionsStore'
 import { OCCASION_CATEGORIES } from '../constants/index.js'
 
 const route = useRoute()
 const router = useRouter()
 const recordStore = useRecordStore()
+const customOccasionsStore = useCustomOccasionsStore()
+const { occasionCategoriesWithCustom, addCustomOccasion } = customOccasionsStore
 
 const record = ref(null)
 const showDeleteConfirm = ref(false)
@@ -64,6 +67,54 @@ const editForm = ref({
   address: ''
 })
 
+// 编辑时的分类选择
+const selectedCategory = ref(null)
+const showCustomInput = ref(false)
+const customOccasionInput = ref('')
+
+// 当前选中分类的颜色
+const selectedCategoryColor = computed(() => {
+  if (!selectedCategory.value) return '#990f19'
+  return selectedCategory.value.color
+})
+
+// 选择分类
+const selectCategory = (cat) => {
+  selectedCategory.value = cat
+  editForm.value.occasionType = cat.type
+  showCustomInput.value = false
+  customOccasionInput.value = ''
+}
+
+// 返回分类列表
+const backToCategories = () => {
+  selectedCategory.value = null
+  showCustomInput.value = false
+  customOccasionInput.value = ''
+}
+
+// 确认选择事由
+const confirmOccasion = (item, catType) => {
+  editForm.value.occasion = item
+  editForm.value.occasionType = catType
+  selectedCategory.value = null
+  showCustomInput.value = false
+  customOccasionInput.value = ''
+}
+
+// 添加并选择自定义事由
+const addAndSelectCustomOccasion = () => {
+  const inputValue = customOccasionInput.value.trim()
+  if (!inputValue) return
+
+  addCustomOccasion(inputValue)
+  editForm.value.occasion = inputValue
+  editForm.value.occasionType = 'other'
+  customOccasionInput.value = ''
+  showCustomInput.value = false
+  selectedCategory.value = null
+}
+
 const onEdit = () => {
   if (record.value) {
     editForm.value = {
@@ -75,6 +126,8 @@ const onEdit = () => {
       status: record.value.status,
       address: record.value.address || ''
     }
+    // 根据当前事由类型找到对应分类
+    selectedCategory.value = occasionCategoriesWithCustom.value.find(c => c.type === record.value.occasionType) || null
     showEditModal.value = true
   }
 }
@@ -96,6 +149,9 @@ const saveEdit = () => {
 
 const cancelEdit = () => {
   showEditModal.value = false
+  selectedCategory.value = null
+  showCustomInput.value = false
+  customOccasionInput.value = ''
 }
 
 const deleteRecord = () => {
@@ -262,15 +318,94 @@ onMounted(() => {
             />
           </div>
 
-          <!-- 事由 -->
+          <!-- 事由选择 -->
           <div>
             <label class="block text-xs sm:text-sm font-bold text-[#5a403e] mb-1.5 sm:mb-2">事由</label>
-            <input
-              v-model="editForm.occasion"
-              type="text"
-              class="w-full bg-[#f0eded] rounded-xl p-3 sm:p-4 text-base sm:text-lg font-bold text-[#1b1c1c] border-none focus:ring-2 focus:ring-[#bc2c2e] outline-none"
-              placeholder="输入事由"
-            />
+
+            <!-- 显示当前选择 -->
+            <div
+              v-if="!selectedCategory"
+              class="bg-[#990f19] text-white p-2.5 sm:p-3 rounded-xl shadow mb-2"
+            >
+              <span class="text-xs sm:text-sm opacity-80">当前选择：</span>
+              <span class="font-black ml-1 sm:ml-2 text-sm sm:text-base">{{ editForm.occasion }}</span>
+            </div>
+
+            <!-- 分类列表 -->
+            <div v-if="!selectedCategory" class="space-y-2">
+              <button
+                v-for="cat in occasionCategoriesWithCustom"
+                :key="cat.type"
+                @click="selectCategory(cat)"
+                class="w-full p-3 sm:p-4 rounded-xl bg-[#f0eded] hover:bg-[#e5e2e1] transition-all active:scale-95 flex items-center justify-between"
+              >
+                <div class="flex items-center gap-2 sm:gap-3">
+                  <span class="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full" :style="{ backgroundColor: cat.color }"></span>
+                  <span class="font-bold text-sm sm:text-base">{{ cat.label }}</span>
+                </div>
+                <ChevronRight class="text-[#5a403e]" :size="18" />
+              </button>
+            </div>
+
+            <!-- 具体事由选择 -->
+            <div v-else class="space-y-2 sm:space-y-3">
+              <button
+                @click="backToCategories"
+                class="flex items-center gap-2 text-[#990f19] font-bold text-xs sm:text-sm"
+              >
+                <span>←</span> 返回分类
+              </button>
+              <div class="font-bold flex items-center gap-2 p-2.5 sm:p-3 bg-[#f0eded] rounded-lg text-sm sm:text-base" :style="{ color: selectedCategoryColor }">
+                <span class="w-2 h-2 rounded-full" :style="{ backgroundColor: selectedCategoryColor }"></span>
+                {{ selectedCategory.label }}
+              </div>
+              <div class="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto">
+                <button
+                  v-for="item in selectedCategory.items"
+                  :key="item"
+                  @click="confirmOccasion(item, selectedCategory.type)"
+                  class="p-2.5 sm:p-3 rounded-xl text-xs sm:text-sm font-bold transition-all active:scale-95"
+                  :class="editForm.occasion === item ? 'bg-[#990f19] text-white shadow' : 'bg-[#f0eded] hover:bg-[#e5e2e1]'"
+                >
+                  {{ item }}
+                </button>
+              </div>
+
+              <!-- 自定义事由 -->
+              <div v-if="selectedCategory.type === 'other'" class="pt-2 sm:pt-3 border-t border-[#e5e2e1]">
+                <button
+                  v-if="!showCustomInput"
+                  @click="showCustomInput = true"
+                  class="w-full p-2.5 sm:p-3 rounded-xl border-2 border-dashed border-[#990f19] text-[#990f19] font-bold text-xs sm:text-sm"
+                >
+                  + 添加自定义事由
+                </button>
+                <div v-else class="space-y-2">
+                  <input
+                    v-model="customOccasionInput"
+                    type="text"
+                    placeholder="输入自定义事由"
+                    class="w-full bg-[#f0eded] rounded-xl p-2.5 sm:p-3 font-bold text-sm sm:text-base border-none focus:ring-2 focus:ring-[#bc2c2e] outline-none"
+                    @keyup.enter="addAndSelectCustomOccasion"
+                  />
+                  <div class="flex gap-2">
+                    <button
+                      @click="addAndSelectCustomOccasion"
+                      :disabled="!customOccasionInput.trim()"
+                      class="flex-1 py-2 rounded-lg bg-[#990f19] text-white font-bold text-sm disabled:opacity-50"
+                    >
+                      确认
+                    </button>
+                    <button
+                      @click="showCustomInput = false; customOccasionInput = ''"
+                      class="flex-1 py-2 rounded-lg bg-[#f0eded] font-bold text-sm"
+                    >
+                      取消
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
           <!-- 地址 -->
