@@ -1,20 +1,16 @@
 <script setup>
-import { ref, onMounted, computed } from 'vue'
-import { useRouter } from 'vue-router'
-import { PlusCircle, Share2, Wallet, Sparkles, ChevronRight, X, CalendarIcon } from 'lucide-vue-next'
+import { ref, computed } from 'vue'
+import { PlusCircle, Share2, Wallet, ChevronRight, X, CalendarIcon } from 'lucide-vue-next'
 import { useRecordStore } from '../stores/recordStore'
 import { useCustomOccasionsStore } from '../stores/customOccasionsStore'
 import { Share } from '@capacitor/share'
-import { Filesystem, Directory, Encoding } from '@capacitor/filesystem'
+import { Filesystem, Directory } from '@capacitor/filesystem'
 import * as XLSX from 'xlsx'
-import AiImport from './AiImport.vue'
 
-const router = useRouter()
 const recordStore = useRecordStore()
 const customOccasionsStore = useCustomOccasionsStore()
 const { occasionCategoriesWithCustom, addCustomOccasion } = customOccasionsStore
 
-const showAiImport = ref(false)
 const showAddForm = ref(false)
 
 // 表单数据
@@ -210,10 +206,6 @@ const closeAddForm = () => {
   showCustomInput.value = false
   customOccasionInput.value = ''
 }
-
-onMounted(() => {
-  // 数据通过 computed 自动响应式更新
-})
 </script>
 
 <template>
@@ -241,7 +233,6 @@ onMounted(() => {
       </div>
       <div class="bg-[#f0eded] p-4 sm:p-5 rounded-2xl flex flex-col justify-between min-h-[80px] sm:min-h-[100px]">
         <div class="flex items-center gap-2 text-[#5a403e]">
-          <Sparkles :size="18" />
           <span class="font-bold text-xs sm:text-sm">记录条数</span>
         </div>
         <div class="text-lg sm:text-xl font-black truncate text-[#1b1c1c]">{{ recordCount }} 条</div>
@@ -257,22 +248,13 @@ onMounted(() => {
         <PlusCircle :size="26" />
         一键记账
       </button>
-      <div class="grid grid-cols-2 gap-3 sm:gap-4">
-        <button
-          @click="showAiImport = true"
-          class="h-14 sm:h-16 bg-[#ffdad7] hover:bg-[#ffcfc9] text-[#990f19] text-base sm:text-lg font-bold flex items-center justify-center gap-2 rounded-2xl transition-all active:scale-95"
-        >
-          <Sparkles :size="20" />
-          AI识别
-        </button>
-        <button
-          @click="exportData"
-          class="h-14 sm:h-16 bg-[#f0eded] hover:bg-[#eae7e7] text-[#1b1c1c] text-base sm:text-lg font-bold flex items-center justify-center gap-2 rounded-2xl transition-all active:scale-95"
-        >
-          <Share2 :size="20" />
-          导出
-        </button>
-      </div>
+      <button
+        @click="exportData"
+        class="w-full h-14 sm:h-16 bg-[#f0eded] hover:bg-[#eae7e7] text-[#1b1c1c] text-base sm:text-lg font-bold flex items-center justify-center gap-2 rounded-2xl transition-all active:scale-95"
+      >
+        <Share2 :size="20" />
+        导出数据
+      </button>
     </div>
 
     <!-- Tips & Info -->
@@ -283,15 +265,9 @@ onMounted(() => {
       </div>
       <div class="text-center text-[#5a403e] text-xs sm:text-sm space-y-1">
         <p>作者：沅·Luminous</p>
-        <p>版本号：v1.0.2</p>
+        <p>版本号：v1.1.0</p>
       </div>
     </div>
-
-    <!-- AI Import Dialog -->
-    <AiImport
-      v-if="showAiImport"
-      @close="showAiImport = false"
-    />
 
     <!-- Add Record Modal -->
     <Teleport to="body">

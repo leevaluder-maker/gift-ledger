@@ -5,16 +5,11 @@ import {
   Home,
   History,
   ArrowLeft,
-  Settings,
 } from 'lucide-vue-next'
-import ApiSettings from './views/ApiSettings.vue'
-import AiImport from './views/AiImport.vue'
 
 const router = useRouter()
 const route = useRoute()
 const isLoaded = ref(false)
-const showApiSettings = ref(false)
-const showAiImport = ref(false)
 
 // 检查是否是详情页面
 const isDetailPage = computed(() => route.name === 'RecordDetail')
@@ -63,17 +58,8 @@ const switchTab = (tab) => {
         </div>
         <!-- 中间：标题 -->
         <h1 class="text-xl sm:text-2xl font-black tracking-tight text-[#990f19]">极简账本</h1>
-        <!-- 右侧：设置按钮或占位 -->
-        <div class="w-8 sm:w-10">
-          <button
-            v-if="!isDetailPage"
-            @click="showApiSettings = true"
-            class="p-1.5 sm:p-2 rounded-full bg-[#f0eded] text-[#5a403e] active:scale-90 transition-transform"
-            title="设置"
-          >
-            <Settings :size="20" />
-          </button>
-        </div>
+        <!-- 右侧：占位 -->
+        <div class="w-8 sm:w-10"></div>
       </div>
     </header>
 
@@ -108,10 +94,6 @@ const switchTab = (tab) => {
         </button>
       </div>
     </nav>
-
-    <!-- Dialogs -->
-    <ApiSettings v-if="showApiSettings" @close="showApiSettings = false" />
-    <AiImport v-if="showAiImport" @close="showAiImport = false" />
   </div>
 </template>
 
