@@ -1,0 +1,5 @@
+{
+  "appId": "com.minimal.ledger",
+  "appName": "极简账本",
+  "webDir": "dist"
+}
