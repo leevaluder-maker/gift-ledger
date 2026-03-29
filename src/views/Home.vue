@@ -79,42 +79,47 @@ const exportData = async () => {
   const dateStr = `${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`
   const filename = `极简账本数据备份${dateStr}.xlsx`
 
-  try {
-    // 生成 Excel 文件的 base64
-    const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
+  // 检测是否在 Capacitor 原生环境中运行
+  const isNative = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()
 
-    // 直接保存到 Documents 目录
+  if (isNative) {
+    // 手机端：保存到 Documents 目录
     try {
-      await Filesystem.writeFile({
-        path: filename,
-        data: wbout,
-        directory: Directory.Documents,
-      })
-      alert(`导出成功\n\n文件位置：\nDocuments/${filename}\n\n可在文件管理器中查看`)
+      const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
+      try {
+        await Filesystem.writeFile({
+          path: filename,
+          data: wbout,
+          directory: Directory.Documents,
+        })
+        alert(`导出成功\n\n文件位置：\nDocuments/${filename}\n\n可在文件管理器中查看`)
+      } catch (e) {
+        // 如果 Documents 失败，尝试分享方式
+        console.log('Documents 保存失败，尝试分享:', e)
+        const result = await Filesystem.writeFile({
+          path: filename,
+          data: wbout,
+          directory: Directory.Cache,
+        })
+        await Share.share({
+          title: '导出礼金记录',
+          text: '礼金账本数据备份',
+          url: result.uri,
+          dialogTitle: '导出礼金记录',
+        })
+      }
     } catch (e) {
-      // 如果 Documents 失败，尝试分享方式
-      console.log('Documents 保存失败，尝试分享:', e)
-      const result = await Filesystem.writeFile({
-        path: filename,
-        data: wbout,
-        directory: Directory.Cache,
-      })
-      await Share.share({
-        title: '导出礼金记录',
-        text: '礼金账本数据备份',
-        url: result.uri,
-        dialogTitle: '导出礼金记录',
-      })
+      console.error('导出失败:', e)
+      alert('导出失败，请重试')
     }
-  } catch (e) {
-    console.error('导出失败:', e)
-    // 如果都失败，尝试 Web 方式下载
+  } else {
+    // Web 端：直接触发浏览器下载
     try {
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
       const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
       downloadBlob(blob, filename)
-    } catch (e2) {
-      console.error('备用导出也失败:', e2)
+    } catch (e) {
+      console.error('导出失败:', e)
       alert('导出失败，请重试')
     }
   }
