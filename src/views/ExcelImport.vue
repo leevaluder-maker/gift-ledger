@@ -51,37 +51,36 @@ const downloadTemplate = async () => {
   const isNative = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()
 
   if (isNative) {
-    // 移动端：先保存文件，再调用分享
+    // 移动端：直接保存到下载目录
     try {
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
-      const result = await Filesystem.writeFile({
-        path: filename,
-        data: wbout,
-        directory: Directory.Cache,  // 使用 Cache 目录，分享后可以清理
-      })
 
-      // 调用系统分享，让用户选择保存位置
-      await Share.share({
-        title: '导入模板',
-        text: '礼金账本导入模板',
-        url: result.uri,
-        dialogTitle: '保存模板',
-      })
-    } catch (e) {
-      console.error('分享模板失败:', e)
-      // 如果分享失败，尝试直接保存到 Documents
+      // 尝试保存到 Downloads 目录（需要 Android 10+）
       try {
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
         await Filesystem.writeFile({
           path: filename,
           data: wbout,
           directory: Directory.Documents,
         })
-        alert(`模板已保存到：Documents/${filename}`)
-      } catch (e2) {
-        console.error('保存模板失败:', e2)
-        alert('下载模板失败，请重试')
+        alert(`模板已保存\n\n文件位置：\nDocuments/${filename}\n\n可在文件管理器中查看`)
+      } catch (e) {
+        // 如果 Documents 失败，尝试分享方式
+        console.log('Documents 保存失败，尝试分享:', e)
+        const result = await Filesystem.writeFile({
+          path: filename,
+          data: wbout,
+          directory: Directory.Cache,
+        })
+        await Share.share({
+          title: '导入模板',
+          text: '礼金账本导入模板',
+          url: result.uri,
+          dialogTitle: '保存模板',
+        })
       }
+    } catch (e) {
+      console.error('保存模板失败:', e)
+      alert('下载模板失败，请重试')
     }
   } else {
     // Web 浏览器：使用 Blob 下载
@@ -139,11 +138,12 @@ const handleFileUpload = (event) => {
             if (cellStr.includes('姓名')) headerMap.name = colIndex
             else if (cellStr.includes('金额')) headerMap.amount = colIndex
             else if (cellStr.includes('事由') && !cellStr.includes('分类')) headerMap.occasion = colIndex
-            else if (cellStr.includes('分类') || cellStr.includes('事由分类')) headerMap.occasionType = colIndex
+            else if (cellStr.includes('分类') || cellStr.includes('类别') || cellStr === '类型') headerMap.occasionType = colIndex
             else if (cellStr.includes('日期')) headerMap.date = colIndex
             else if (cellStr.includes('地址')) headerMap.address = colIndex
             else if (cellStr.includes('还礼') || cellStr.includes('状态')) headerMap.status = colIndex
           })
+          console.log('表头映射:', headerMap)
           return
         }
 
@@ -229,8 +229,9 @@ const parseRowToObject = (row, headerMap) => {
   let matchedType = 'other'
 
   // 如果表格中有事由分类，优先使用
-  if (occasionTypeRaw) {
+  if (occasionTypeRaw !== undefined && occasionTypeRaw !== null) {
     const typeStr = String(occasionTypeRaw).trim()
+    console.log('读取到的事由分类:', typeStr)
     // 匹配分类类型
     if (typeStr.includes('红') || typeStr.toLowerCase().includes('red')) {
       matchedType = 'red'
@@ -241,6 +242,7 @@ const parseRowToObject = (row, headerMap) => {
     } else if (typeStr.includes('其他') || typeStr.toLowerCase().includes('other')) {
       matchedType = 'other'
     }
+    console.log('匹配结果:', matchedType)
   } else {
     // 如果表格中没有事由分类，根据事由自动匹配
     const matchResult = matchOccasion(occasion || '')

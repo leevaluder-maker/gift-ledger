@@ -83,23 +83,32 @@ const exportData = async () => {
     // 生成 Excel 文件的 base64
     const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
 
-    // 使用 Capacitor Filesystem 保存文件
-    const result = await Filesystem.writeFile({
-      path: filename,
-      data: wbout,
-      directory: Directory.Cache,
-    })
-
-    // 使用 Capacitor Share 分享文件
-    await Share.share({
-      title: '导出礼金记录',
-      text: '礼金账本数据备份',
-      url: result.uri,
-      dialogTitle: '导出礼金记录',
-    })
+    // 直接保存到 Documents 目录
+    try {
+      await Filesystem.writeFile({
+        path: filename,
+        data: wbout,
+        directory: Directory.Documents,
+      })
+      alert(`导出成功\n\n文件位置：\nDocuments/${filename}\n\n可在文件管理器中查看`)
+    } catch (e) {
+      // 如果 Documents 失败，尝试分享方式
+      console.log('Documents 保存失败，尝试分享:', e)
+      const result = await Filesystem.writeFile({
+        path: filename,
+        data: wbout,
+        directory: Directory.Cache,
+      })
+      await Share.share({
+        title: '导出礼金记录',
+        text: '礼金账本数据备份',
+        url: result.uri,
+        dialogTitle: '导出礼金记录',
+      })
+    }
   } catch (e) {
     console.error('导出失败:', e)
-    // 如果分享失败，尝试备用方案
+    // 如果都失败，尝试 Web 方式下载
     try {
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
       const blob = new Blob([wbout], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' })
