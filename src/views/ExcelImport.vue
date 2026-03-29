@@ -51,21 +51,20 @@ const downloadTemplate = async () => {
   const isNative = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()
 
   if (isNative) {
-    // 移动端：直接保存到下载目录
+    // 移动端：直接保存到 Documents 目录
     try {
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
-
-      // 尝试保存到 Downloads 目录（需要 Android 10+）
+      await Filesystem.writeFile({
+        path: filename,
+        data: wbout,
+        directory: Directory.Documents,
+      })
+      alert(`模板已保存\n\n文件位置：\nDocuments/${filename}\n\n可在文件管理器中查看`)
+    } catch (e) {
+      console.log('Documents 保存失败，尝试分享:', e)
+      // 如果 Documents 失败，尝试分享方式
       try {
-        await Filesystem.writeFile({
-          path: filename,
-          data: wbout,
-          directory: Directory.Documents,
-        })
-        alert(`模板已保存\n\n文件位置：\nDocuments/${filename}\n\n可在文件管理器中查看`)
-      } catch (e) {
-        // 如果 Documents 失败，尝试分享方式
-        console.log('Documents 保存失败，尝试分享:', e)
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
         const result = await Filesystem.writeFile({
           path: filename,
           data: wbout,
@@ -77,10 +76,14 @@ const downloadTemplate = async () => {
           url: result.uri,
           dialogTitle: '保存模板',
         })
+        // 分享成功或用户取消，都不显示错误
+      } catch (shareError) {
+        console.log('分享结果:', shareError)
+        // 用户取消分享不报错，只有真正失败才报错
+        if (shareError && shareError.message && !shareError.message.includes('cancel')) {
+          alert('下载模板失败，请重试')
+        }
       }
-    } catch (e) {
-      console.error('保存模板失败:', e)
-      alert('下载模板失败，请重试')
     }
   } else {
     // Web 浏览器：使用 Blob 下载
