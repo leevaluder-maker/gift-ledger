@@ -21,13 +21,14 @@
 
 ## 在线使用
 
-**网页版**：https://gift-ledger.vercel.app
+- **国内直连**：https://gift.leevaluder.top
+- **国外直连**：https://gift-ledger.vercel.app
 
 ## 安装到手机
 
 ### iOS 用户（iPhone/iPad）
 
-1. 用 **Safari 浏览器** 打开 https://gift-ledger.vercel.app
+1. 用 **Safari 浏览器** 打开 https://gift.leevaluder.top
 2. 点击底部的 **分享按钮** (方框里有向上箭头)
 3. 向下滑动，点击 **"添加到主屏幕"**
 4. 点击 **"添加"**
@@ -40,7 +41,7 @@
 下载 APK 文件直接安装（需要开启"允许安装未知来源应用"）
 
 #### 方式二：PWA 安装
-1. 用 Chrome 打开 https://gift-ledger.vercel.app
+1. 用 Chrome 打开 https://gift.leevaluder.top
 2. 点击右上角菜单 ⋮
 3. 选择 **"添加到主屏幕"** 或 **"安装应用"**
 
@@ -90,6 +91,23 @@ npm run build
 - 数据格式：JSON 数组
 - 应用完全离线可用
 - 支持导出 Excel 备份
+
+## 应用截图
+
+<div align="center">
+  <img src="public/posters/海报1-品牌主海报.png" alt="品牌主海报" width="300"/>
+  <img src="public/posters/海报2-功能特点.png" alt="功能特点" width="300"/>
+</div>
+
+<div align="center">
+  <img src="public/posters/海报3-事由分类.png" alt="事由分类" width="300"/>
+  <img src="public/posters/海报4-记录管理.png" alt="记录管理" width="300"/>
+</div>
+
+<div align="center">
+  <img src="public/posters/海报5-导入导出.png" alt="导入导出" width="300"/>
+  <img src="public/posters/海报6-安装指南.png" alt="安装指南" width="300"/>
+</div>
 
 ## 目标用户
 

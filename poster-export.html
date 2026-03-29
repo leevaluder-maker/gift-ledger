@@ -1,0 +1,1658 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>极简账本 - 宣传海报导出</title>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;700;900&display=swap" rel="stylesheet">
+  <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Noto Sans SC', -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #1a1a1a;
+      min-height: 100vh;
+      padding: 40px 20px;
+    }
+
+    .page-title {
+      text-align: center;
+      color: white;
+      margin-bottom: 30px;
+    }
+
+    .page-title h1 {
+      font-size: 28px;
+      margin-bottom: 10px;
+    }
+
+    .page-title p {
+      color: #888;
+      font-size: 14px;
+    }
+
+    .poster-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      gap: 30px;
+      max-width: 1400px;
+      margin: 0 auto;
+    }
+
+    .poster-wrapper {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .poster {
+      width: 100%;
+      max-width: 420px;
+      aspect-ratio: 9/16;
+      border-radius: 0; /* 直角 */
+      overflow: hidden;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+      margin: 0 auto;
+    }
+
+    .export-btn {
+      background: linear-gradient(135deg, #990f19 0%, #bc2c2e 100%);
+      color: white;
+      border: none;
+      padding: 10px 24px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+
+    .export-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 15px rgba(153, 15, 25, 0.4);
+    }
+
+    .export-btn:active {
+      transform: translateY(0);
+    }
+
+    .export-all-btn {
+      display: block;
+      margin: 0 auto 30px;
+      background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+      color: white;
+      border: none;
+      padding: 14px 40px;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+
+    .export-all-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 20px rgba(22, 163, 74, 0.4);
+    }
+
+    /* 通用海报样式 */
+    .poster-inner {
+      width: 100%;
+      height: 100%;
+      padding: 30px 25px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+    }
+
+    /* 海报1：品牌主海报 */
+    .poster-1 {
+      background: linear-gradient(165deg, #fcf9f8 0%, #f5f0ef 50%, #ffdad7 100%);
+    }
+
+    .poster-1 .app-icon {
+      width: 70px;
+      height: 70px;
+      margin: 0 auto 16px;
+      background: linear-gradient(180deg, #FDFDFD 0%, #F2F2F2 100%);
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .poster-1 .app-icon::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background-image: radial-gradient(circle, rgba(0,0,0,0.02) 1px, transparent 1px);
+      background-size: 4px 4px;
+    }
+
+    .poster-1 .app-icon svg {
+      width: 46px;
+      height: 53px;
+    }
+
+    .poster-1 .app-name {
+      font-size: 36px;
+      font-weight: 900;
+      color: #990f19;
+      text-align: center;
+      letter-spacing: -1px;
+      margin-bottom: 6px;
+    }
+
+    .poster-1 .tagline {
+      font-size: 14px;
+      color: #5a403e;
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .phone-frame {
+      background: #1b1c1c;
+      border-radius: 28px;
+      padding: 6px;
+      margin: 0 10px;
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.2);
+    }
+
+    .phone-screen-1 {
+      background: #fcf9f8;
+      border-radius: 22px;
+      overflow: hidden;
+    }
+
+    .phone-header-1 {
+      background: #990f19;
+      color: white;
+      text-align: center;
+      padding: 12px;
+      font-weight: 700;
+      font-size: 14px;
+    }
+
+    .phone-content-1 {
+      padding: 16px;
+    }
+
+    .stat-card-main {
+      background: linear-gradient(135deg, #990f19 0%, #bc2c2e 100%);
+      border-radius: 14px;
+      padding: 14px;
+      text-align: center;
+      color: white;
+      margin-bottom: 10px;
+    }
+
+    .stat-card-main .label {
+      font-size: 11px;
+      opacity: 0.85;
+      margin-bottom: 4px;
+    }
+
+    .stat-card-main .value {
+      font-size: 26px;
+      font-weight: 900;
+    }
+
+    .stat-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .stat-card-small {
+      background: #f0eded;
+      border-radius: 10px;
+      padding: 10px;
+      text-align: center;
+    }
+
+    .stat-card-small .label {
+      font-size: 10px;
+      color: #5a403e;
+      margin-bottom: 3px;
+    }
+
+    .stat-card-small .value {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1b1c1c;
+    }
+
+    .stat-card-small .value.pending {
+      color: #d97706;
+    }
+
+    .add-btn-mock {
+      background: #990f19;
+      color: white;
+      text-align: center;
+      padding: 12px;
+      border-radius: 10px;
+      font-weight: 700;
+      font-size: 13px;
+    }
+
+    .feature-list {
+      margin-top: 20px;
+      padding: 0 5px;
+    }
+
+    .feature-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+    }
+
+    .feature-icon {
+      width: 28px;
+      height: 28px;
+      background: #ffdad7;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-icon svg {
+      width: 16px;
+      height: 16px;
+      stroke: #990f19;
+    }
+
+    .feature-text {
+      font-size: 13px;
+      color: #1b1c1c;
+      font-weight: 500;
+    }
+
+    .bottom-section {
+      margin-top: auto;
+      text-align: center;
+      padding-top: 16px;
+    }
+
+    .qr-box {
+      background: white;
+      border-radius: 12px;
+      padding: 10px;
+      display: inline-block;
+    }
+
+    .qr-placeholder {
+      width: 70px;
+      height: 70px;
+      background: #fcf9f8;
+      border: 1px solid #e5e2e1;
+      border-radius: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .url-text {
+      font-size: 11px;
+      color: #990f19;
+      margin-top: 6px;
+      font-weight: 600;
+    }
+
+    /* 海报2：功能特点 */
+    .poster-2 {
+      background: linear-gradient(180deg, #990f19 0%, #7a0c14 100%);
+      position: relative;
+    }
+
+    .poster-2::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Ccircle cx='20' cy='20' r='1.5' fill='%23ffffff' fill-opacity='0.08'/%3E%3C/svg%3E");
+    }
+
+    .poster-2 .poster-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .poster-2 .header-section {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .poster-2 .main-title {
+      color: white;
+      font-size: 26px;
+      font-weight: 900;
+      margin-bottom: 6px;
+    }
+
+    .poster-2 .sub-title {
+      color: rgba(255, 255, 255, 0.7);
+      font-size: 13px;
+    }
+
+    .feature-card {
+      background: white;
+      border-radius: 16px;
+      padding: 16px;
+      margin-bottom: 12px;
+      display: flex;
+      align-items: flex-start;
+      gap: 14px;
+    }
+
+    .feature-card-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, #ffdad7 0%, #ffcfc9 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .feature-card-icon svg {
+      width: 22px;
+      height: 22px;
+      stroke: #990f19;
+    }
+
+    .feature-card-content h4 {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1b1c1c;
+      margin-bottom: 4px;
+    }
+
+    .feature-card-content p {
+      font-size: 12px;
+      color: #5a403e;
+      line-height: 1.5;
+    }
+
+    .poster-2 .bottom-card {
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 16px;
+      padding: 20px;
+      text-align: center;
+      margin-top: auto;
+    }
+
+    .poster-2 .bottom-card h3 {
+      color: white;
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .poster-2 .bottom-card p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 12px;
+      line-height: 1.6;
+    }
+
+    /* 海报3：事由分类 */
+    .poster-3 {
+      background: linear-gradient(180deg, #fcf9f8 0%, #f0eded 100%);
+    }
+
+    .poster-3 .section-title {
+      font-size: 22px;
+      font-weight: 900;
+      color: #990f19;
+      text-align: center;
+      margin-bottom: 6px;
+    }
+
+    .poster-3 .section-desc {
+      font-size: 12px;
+      color: #5a403e;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    .category-block {
+      background: white;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .category-header {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .category-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .category-dot.red { background: #990f19; }
+    .category-dot.white { background: #5a403e; }
+    .category-dot.birthday { background: #d97706; }
+    .category-dot.other { background: #6b7280; }
+
+    .category-name {
+      font-size: 14px;
+      font-weight: 700;
+      color: #1b1c1c;
+    }
+
+    .category-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+    }
+
+    .category-tag {
+      background: #f5f0ef;
+      color: #5a403e;
+      padding: 5px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .custom-hint {
+      background: #ffdad7;
+      border: 2px dashed #990f19;
+      border-radius: 10px;
+      padding: 14px;
+      text-align: center;
+      margin-top: 12px;
+    }
+
+    .custom-hint p {
+      color: #990f19;
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .custom-hint span {
+      font-size: 11px;
+      color: #bc2c2e;
+    }
+
+    /* 海报4：记录管理 */
+    .poster-4 {
+      background: #fcf9f8;
+    }
+
+    .poster-4 .header-section {
+      background: linear-gradient(135deg, #990f19 0%, #bc2c2e 100%);
+      margin: -30px -25px 20px -25px;
+      padding: 30px 25px 20px;
+    }
+
+    .poster-4 .header-title {
+      color: white;
+      font-size: 22px;
+      font-weight: 900;
+      text-align: center;
+      margin-bottom: 4px;
+    }
+
+    .poster-4 .header-sub {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 12px;
+      text-align: center;
+    }
+
+    .record-card {
+      background: white;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .record-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .record-info h4 {
+      font-size: 16px;
+      font-weight: 800;
+      color: #1b1c1c;
+      margin-bottom: 4px;
+    }
+
+    .record-tags {
+      display: flex;
+      gap: 6px;
+    }
+
+    .record-tag {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 4px;
+      font-weight: 600;
+    }
+
+    .record-tag.type {
+      background: #f0eded;
+      color: #5a403e;
+    }
+
+    .record-tag.occasion {
+      background: #ffdad7;
+      color: #990f19;
+    }
+
+    .record-amount {
+      text-align: right;
+    }
+
+    .record-amount .amount {
+      font-size: 20px;
+      font-weight: 900;
+      color: #990f19;
+    }
+
+    .record-amount .status {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 600;
+      margin-top: 4px;
+      display: inline-block;
+    }
+
+    .record-amount .status.pending {
+      background: #fef3c7;
+      color: #d97706;
+    }
+
+    .record-amount .status.returned {
+      background: #dcfce7;
+      color: #16a34a;
+    }
+
+    .record-bottom {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-top: 10px;
+      border-top: 1px solid #f0eded;
+    }
+
+    .record-date {
+      font-size: 11px;
+      color: #5a403e;
+    }
+
+    .record-actions {
+      display: flex;
+      gap: 10px;
+    }
+
+    .record-action {
+      font-size: 11px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .record-action.edit {
+      color: #990f19;
+    }
+
+    .record-action.delete {
+      color: #ef4444;
+    }
+
+    .filter-section {
+      background: white;
+      border-radius: 14px;
+      padding: 14px;
+      margin-bottom: 12px;
+    }
+
+    .filter-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #5a403e;
+      margin-bottom: 10px;
+    }
+
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-bottom: 8px;
+    }
+
+    .filter-btn {
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .filter-btn.active {
+      background: #1b1c1c;
+      color: white;
+    }
+
+    .filter-btn.inactive {
+      background: #f0eded;
+      color: #5a403e;
+    }
+
+    .search-box {
+      background: #f0eded;
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    .search-box svg {
+      width: 16px;
+      height: 16px;
+      stroke: #5a403e;
+    }
+
+    .search-box input {
+      border: none;
+      background: none;
+      font-size: 13px;
+      color: #1b1c1c;
+      flex: 1;
+      outline: none;
+    }
+
+    .search-box input::placeholder {
+      color: #a8a29e;
+    }
+
+    /* 海报5：导入导出 */
+    .poster-5 {
+      background: linear-gradient(180deg, #fcf9f8 0%, #f5f0ef 100%);
+    }
+
+    .poster-5 .header-section {
+      text-align: center;
+      padding-top: 10px;
+      margin-bottom: 16px;
+    }
+
+    .poster-5 .header-icon {
+      width: 50px;
+      height: 50px;
+      background: linear-gradient(135deg, #990f19 0%, #bc2c2e 100%);
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 8px;
+    }
+
+    .poster-5 .header-icon svg {
+      width: 26px;
+      height: 26px;
+      stroke: white;
+    }
+
+    .poster-5 .header-title {
+      color: #990f19;
+      font-size: 18px;
+      font-weight: 900;
+      margin-bottom: 4px;
+    }
+
+    .poster-5 .header-desc {
+      color: #5a403e;
+      font-size: 11px;
+    }
+
+    .action-card {
+      background: white;
+      border-radius: 14px;
+      padding: 14px 16px;
+      margin-bottom: 10px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+    }
+
+    .action-card-header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+    }
+
+    .action-card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .action-card-icon.export {
+      background: linear-gradient(135deg, #ffdad7 0%, #ffcfc9 100%);
+    }
+
+    .action-card-icon.import {
+      background: linear-gradient(135deg, #dcfce7 0%, #bbf7d0 100%);
+    }
+
+    .action-card-icon.recycle {
+      background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+    }
+
+    .action-card-icon svg {
+      width: 22px;
+      height: 22px;
+    }
+
+    .action-card-icon.export svg {
+      stroke: #990f19;
+    }
+
+    .action-card-icon.import svg {
+      stroke: #16a34a;
+    }
+
+    .action-card-icon.recycle svg {
+      stroke: #d97706;
+    }
+
+    .action-card-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #1b1c1c;
+    }
+
+    .action-card-desc {
+      font-size: 12px;
+      color: #5a403e;
+      line-height: 1.4;
+      margin-bottom: 8px;
+    }
+
+    .format-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .format-tag {
+      background: #f0eded;
+      color: #5a403e;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .backup-hint {
+      background: #ffdad7;
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin-top: auto;
+    }
+
+    .backup-hint h4 {
+      color: #990f19;
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .backup-hint p {
+      color: #5a403e;
+      font-size: 12px;
+      line-height: 1.5;
+    }
+
+    /* 海报6：安装指南 */
+    .poster-6 {
+      background: linear-gradient(180deg, #ffdad7 0%, #fcf9f8 40%, #ffffff 100%);
+    }
+
+    .poster-6 .header-section {
+      text-align: center;
+      padding-top: 10px;
+      margin-bottom: 12px;
+    }
+
+    .poster-6 .platform-icons {
+      display: flex;
+      justify-content: center;
+      gap: 16px;
+      margin-bottom: 8px;
+    }
+
+    .platform-icon {
+      width: 44px;
+      height: 44px;
+      background: white;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    }
+
+    .platform-icon svg {
+      width: 24px;
+      height: 24px;
+    }
+
+    .poster-6 .header-title {
+      font-size: 20px;
+      font-weight: 900;
+      color: #990f19;
+      margin-bottom: 2px;
+    }
+
+    .poster-6 .header-desc {
+      font-size: 11px;
+      color: #5a403e;
+    }
+
+    .install-section {
+      background: white;
+      border-radius: 14px;
+      padding: 12px;
+      margin-bottom: 10px;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+    }
+
+    .install-section-title {
+      font-size: 13px;
+      font-weight: 700;
+      color: #1b1c1c;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .install-section-title svg {
+      width: 16px;
+      height: 16px;
+    }
+
+    .install-step {
+      display: flex;
+      gap: 10px;
+      padding: 6px 0;
+      border-bottom: 1px solid #f0eded;
+    }
+
+    .install-step:last-child {
+      border-bottom: none;
+    }
+
+    .step-num {
+      width: 20px;
+      height: 20px;
+      background: #990f19;
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 700;
+      flex-shrink: 0;
+    }
+
+    .step-text {
+      font-size: 11px;
+      color: #1b1c1c;
+      line-height: 1.4;
+      padding-top: 2px;
+    }
+
+    .step-text strong {
+      color: #990f19;
+    }
+
+    .baidu-link {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 10px;
+      background: #f5f5f5;
+      border-radius: 8px;
+      font-size: 10px;
+      color: #666;
+      margin-top: 8px;
+    }
+
+    .baidu-link strong {
+      color: #1b1c1c;
+      font-weight: 600;
+    }
+
+    .url-box {
+      background: #1b1c1c;
+      border-radius: 12px;
+      padding: 12px;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .url-box .label {
+      color: rgba(255, 255, 255, 0.6);
+      font-size: 10px;
+      margin-bottom: 4px;
+    }
+
+    .url-box .url {
+      color: white;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
+      word-break: break-all;
+    }
+
+    .free-badge {
+      background: linear-gradient(135deg, #990f19 0%, #bc2c2e 100%);
+      color: white;
+      text-align: center;
+      padding: 14px;
+      border-radius: 14px;
+      margin-top: auto;
+    }
+
+    .free-badge h4 {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+
+    .free-badge p {
+      font-size: 11px;
+      opacity: 0.9;
+    }
+
+    @media print {
+      body {
+        background: white;
+        padding: 0;
+      }
+      .page-title {
+        display: none;
+      }
+      .poster-grid {
+        gap: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page-title">
+    <h1>极简账本 - 宣传海报</h1>
+    <p>点击按钮导出单张海报 | 四角为直角</p>
+  </div>
+
+  <button class="export-all-btn" onclick="exportAllPosters()">一键导出全部海报 (PNG)</button>
+
+  <div class="poster-grid">
+    <!-- 海报1：品牌主海报 -->
+    <div class="poster-wrapper">
+      <div class="poster poster-1" id="poster-1">
+        <div class="poster-inner">
+          <div class="app-icon">
+            <!-- 账本图标 SVG - 与icon-generator.html一致 -->
+            <svg viewBox="0 0 46 53" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <!-- 账本主体阴影 -->
+              <defs>
+                <filter id="bookShadow" x="-20%" y="-20%" width="140%" height="140%">
+                  <feDropShadow dx="1" dy="1" stdDeviation="1.5" flood-opacity="0.08"/>
+                </filter>
+              </defs>
+              <!-- 账本主体 -->
+              <rect x="3" y="2" width="40" height="49" rx="2" fill="#F9F9F9" filter="url(#bookShadow)"/>
+              <!-- 书脊 -->
+              <rect x="3" y="2" width="10" height="49" fill="#FAFAFA"/>
+              <rect x="12.5" y="2" width="0.5" height="49" fill="rgba(0,0,0,0.05)"/>
+              <!-- 书脊内部阴影 -->
+              <rect x="3" y="2" width="10" height="49" fill="url(#spineGrad)"/>
+              <defs>
+                <linearGradient id="spineGrad" x1="3" y1="0" x2="13" y2="0">
+                  <stop offset="0%" stop-color="rgba(0,0,0,0.05)"/>
+                  <stop offset="100%" stop-color="rgba(0,0,0,0)"/>
+                </linearGradient>
+              </defs>
+              <!-- 红色书签带 -->
+              <defs>
+                <linearGradient id="bookmarkGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#DC2626"/>
+                  <stop offset="100%" stop-color="#EF4444"/>
+                </linearGradient>
+              </defs>
+              <rect x="33" y="2" width="5" height="30" fill="url(#bookmarkGrad)"/>
+              <!-- 书签底部切角 -->
+              <polygon points="33,32 35.5,36 38,32" fill="#F9F9F9"/>
+              <!-- 封面装饰线 -->
+              <line x1="18" y1="7" x2="28" y2="7" stroke="rgba(200,200,200,0.5)" stroke-width="0.6"/>
+              <line x1="18" y1="46" x2="28" y2="46" stroke="rgba(200,200,200,0.5)" stroke-width="0.6"/>
+              <!-- 红色细绳 - 位置调整到约30% -->
+              <line x1="15" y1="2" x2="15" y2="51" stroke="rgba(220,38,38,0.8)" stroke-width="1.2"/>
+              <line x1="16" y1="2" x2="16" y2="51" stroke="rgba(0,0,0,0.1)" stroke-width="0.6"/>
+              <!-- 中国结装饰点 -->
+              <circle cx="15.5" cy="26" r="3" fill="#B91C1C"/>
+              <circle cx="15.5" cy="26" r="3" stroke="#EF4444" stroke-width="0.6" fill="none"/>
+              <circle cx="14.5" cy="25" r="0.9" fill="rgba(255,255,255,0.4)"/>
+              <!-- 极简文字 - 竖向排布 -->
+              <text x="30" y="22" font-size="7" font-weight="bold" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif" fill="rgba(0,0,0,0.08)" text-anchor="middle">极</text>
+              <text x="30" y="38" font-size="7" font-weight="bold" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif" fill="rgba(0,0,0,0.08)" text-anchor="middle">简</text>
+              <text x="29" y="21" font-size="7" font-weight="bold" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif" fill="#4A4A4A" text-anchor="middle">极</text>
+              <text x="29" y="37" font-size="7" font-weight="bold" font-family="PingFang SC, Microsoft YaHei, Noto Sans SC, sans-serif" fill="#4A4A4A" text-anchor="middle">简</text>
+            </svg>
+          </div>
+          <h1 class="app-name">极简账本</h1>
+          <p class="tagline">简约高效的人情记账应用</p>
+
+          <div class="phone-frame">
+            <div class="phone-screen-1">
+              <div class="phone-header-1">极简账本</div>
+              <div class="phone-content-1">
+                <div class="stat-card-main">
+                  <div class="label">累计收礼</div>
+                  <div class="value">¥ 12,800</div>
+                </div>
+                <div class="stat-grid">
+                  <div class="stat-card-small">
+                    <div class="label">待还礼金</div>
+                    <div class="value pending">¥ 3,500</div>
+                  </div>
+                  <div class="stat-card-small">
+                    <div class="label">记录条数</div>
+                    <div class="value">28 条</div>
+                  </div>
+                </div>
+                <div class="add-btn-mock">+ 一键记账</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="feature-list">
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                </svg>
+              </div>
+              <span class="feature-text">一键记账，3秒完成</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+                </svg>
+              </div>
+              <span class="feature-text">本地存储，隐私安全</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                  <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+                </svg>
+              </div>
+              <span class="feature-text">离线可用，无需联网</span>
+            </div>
+          </div>
+
+        </div>
+      </div>
+      <button class="export-btn" onclick="exportPoster('poster-1', '海报1-品牌主海报')">导出 PNG</button>
+      <button class="export-btn" onclick="exportPosterJPG('poster-1', '海报1-品牌主海报')" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); margin-top: 8px;">导出 JPG</button>
+    </div>
+
+    <!-- 海报2：功能特点 -->
+    <div class="poster-wrapper">
+      <div class="poster poster-2" id="poster-2">
+        <div class="poster-inner">
+          <div class="header-section">
+            <h2 class="main-title">为什么选择极简账本？</h2>
+            <p class="sub-title">专为中国人情往来设计</p>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="8" x2="12" y2="12"/>
+                <line x1="12" y1="16" x2="12.01" y2="16"/>
+              </svg>
+            </div>
+            <div class="feature-card-content">
+              <h4>极简设计</h4>
+              <p>界面清晰，大字体显示，长辈也能轻松上手</p>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                <polyline points="22,4 12,14.01 9,11.01"/>
+              </svg>
+            </div>
+            <div class="feature-card-content">
+              <h4>还礼提醒</h4>
+              <p>标记已还/未还状态，人情往来心中有数</p>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <circle cx="11" cy="11" r="8"/>
+                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>
+            </div>
+            <div class="feature-card-content">
+              <h4>快速查询</h4>
+              <p>按姓名、事由、状态筛选，查找记录秒开</p>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="7,10 12,15 17,10"/>
+                <line x1="12" y1="15" x2="12" y2="3"/>
+              </svg>
+            </div>
+            <div class="feature-card-content">
+              <h4>数据导出</h4>
+              <p>一键导出Excel备份，数据安全有保障</p>
+            </div>
+          </div>
+
+          <div class="feature-card">
+            <div class="feature-card-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"/>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+              </svg>
+            </div>
+            <div class="feature-card-content">
+              <h4>离线可用</h4>
+              <p>数据存储在本地，无需联网也能用</p>
+            </div>
+          </div>
+
+          <div class="bottom-card">
+            <h3>完全免费 · 无广告</h3>
+            <p>无需注册登录，打开即用<br>支持 iOS / Android / 网页</p>
+          </div>
+        </div>
+      </div>
+      <button class="export-btn" onclick="exportPoster('poster-2', '海报2-功能特点')">导出 PNG</button>
+      <button class="export-btn" onclick="exportPosterJPG('poster-2', '海报2-功能特点')" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); margin-top: 8px;">导出 JPG</button>
+    </div>
+
+    <!-- 海报3：事由分类 -->
+    <div class="poster-wrapper">
+      <div class="poster poster-3" id="poster-3">
+        <div class="poster-inner">
+          <h2 class="section-title">丰富的礼金事由</h2>
+          <p class="section-desc">分类清晰，覆盖中国人情往来场景</p>
+
+          <div class="category-block">
+            <div class="category-header">
+              <div class="category-dot red"></div>
+              <span class="category-name">红喜事</span>
+            </div>
+            <div class="category-tags">
+              <span class="category-tag">我结婚</span>
+              <span class="category-tag">儿子结婚</span>
+              <span class="category-tag">女儿结婚</span>
+              <span class="category-tag">孙子结婚</span>
+              <span class="category-tag">孙女结婚</span>
+              <span class="category-tag">外孙结婚</span>
+              <span class="category-tag">外孙女结婚</span>
+              <span class="category-tag">儿子满月</span>
+              <span class="category-tag">女儿满月</span>
+              <span class="category-tag">乔迁之喜</span>
+              <span class="category-tag">升学</span>
+            </div>
+          </div>
+
+          <div class="category-block">
+            <div class="category-header">
+              <div class="category-dot white"></div>
+              <span class="category-name">白喜事</span>
+            </div>
+            <div class="category-tags">
+              <span class="category-tag">爸爸丧事</span>
+              <span class="category-tag">妈妈丧事</span>
+              <span class="category-tag">爷爷丧事</span>
+              <span class="category-tag">奶奶丧事</span>
+              <span class="category-tag">外公丧事</span>
+              <span class="category-tag">外婆丧事</span>
+              <span class="category-tag">配偶丧事</span>
+            </div>
+          </div>
+
+          <div class="category-block">
+            <div class="category-header">
+              <div class="category-dot birthday"></div>
+              <span class="category-name">祝寿</span>
+            </div>
+            <div class="category-tags">
+              <span class="category-tag">六十大寿</span>
+              <span class="category-tag">七十大寿</span>
+              <span class="category-tag">八十大寿</span>
+              <span class="category-tag">九十大寿</span>
+              <span class="category-tag">百岁寿辰</span>
+            </div>
+          </div>
+
+          <div class="custom-hint">
+            <p>+ 支持自定义事由</p>
+            <span>可添加任意礼金事由，灵活记录</span>
+          </div>
+
+          <div class="feature-list" style="margin-top: 16px; padding: 0;">
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+              </div>
+              <span class="feature-text">点击事由即可快速选择</span>
+            </div>
+            <div class="feature-item">
+              <div class="feature-icon">
+                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <polyline points="22,12 18,12 15,21 9,3 6,12 2,12"/>
+                </svg>
+              </div>
+              <span class="feature-text">按事由筛选统计</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="export-btn" onclick="exportPoster('poster-3', '海报3-事由分类')">导出 PNG</button>
+      <button class="export-btn" onclick="exportPosterJPG('poster-3', '海报3-事由分类')" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); margin-top: 8px;">导出 JPG</button>
+    </div>
+
+    <!-- 海报4：记录管理 -->
+    <div class="poster-wrapper">
+      <div class="poster poster-4" id="poster-4">
+        <div class="poster-inner">
+          <div class="header-section">
+            <h2 class="header-title">清晰记录每笔人情</h2>
+            <p class="header-sub">查询 · 筛选 · 编辑 · 删除</p>
+          </div>
+
+          <div class="search-box">
+            <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+              <circle cx="11" cy="11" r="8"/>
+              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input type="text" placeholder="查人名..." readonly>
+          </div>
+
+          <div class="filter-section">
+            <div class="filter-title">筛选条件</div>
+            <div class="filter-row">
+              <span class="filter-btn inactive">红喜事</span>
+              <span class="filter-btn inactive">白喜事</span>
+              <span class="filter-btn active">待还礼</span>
+              <span class="filter-btn inactive">已还礼</span>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+            <div style="background: #990f19; padding: 12px; border-radius: 12px; color: white; text-align: center;">
+              <div style="font-size: 10px; opacity: 0.8;">筛选收礼</div>
+              <div style="font-size: 18px; font-weight: 900;">¥ 3,500</div>
+            </div>
+            <div style="background: #f0eded; padding: 12px; border-radius: 12px; text-align: center; border-left: 4px solid #d97706;">
+              <div style="font-size: 10px; color: #5a403e;">待还礼金</div>
+              <div style="font-size: 18px; font-weight: 900; color: #d97706;">¥ 3,500</div>
+            </div>
+          </div>
+
+          <div class="record-card">
+            <div class="record-top">
+              <div class="record-info">
+                <h4>张三</h4>
+                <div class="record-tags">
+                  <span class="record-tag type">红喜事</span>
+                  <span class="record-tag occasion">我结婚</span>
+                </div>
+              </div>
+              <div class="record-amount">
+                <div class="amount">+¥500</div>
+                <span class="status pending">待还礼</span>
+              </div>
+            </div>
+            <div class="record-bottom">
+              <span class="record-date">2024年1月15日</span>
+              <div class="record-actions">
+                <span class="record-action edit">编辑</span>
+                <span class="record-action delete">删除</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="record-card">
+            <div class="record-top">
+              <div class="record-info">
+                <h4>李四</h4>
+                <div class="record-tags">
+                  <span class="record-tag type">祝寿</span>
+                  <span class="record-tag occasion">六十大寿</span>
+                </div>
+              </div>
+              <div class="record-amount">
+                <div class="amount">+¥200</div>
+                <span class="status returned">已还礼</span>
+              </div>
+            </div>
+            <div class="record-bottom">
+              <span class="record-date">2024年2月20日</span>
+              <div class="record-actions">
+                <span class="record-action edit">编辑</span>
+                <span class="record-action delete">删除</span>
+              </div>
+            </div>
+          </div>
+
+          <div style="background: #f0eded; border-radius: 12px; padding: 12px; margin-top: auto;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 12px; color: #5a403e;">支持排序方式</div>
+                <div style="font-size: 14px; font-weight: 700; color: #1b1c1c;">时间排序 / 名字排序</div>
+              </div>
+              <svg width="24" height="24" fill="none" stroke="#5a403e" stroke-width="2" viewBox="0 0 24 24">
+                <polyline points="6,9 12,15 18,9"/>
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+      <button class="export-btn" onclick="exportPoster('poster-4', '海报4-记录管理')">导出 PNG</button>
+      <button class="export-btn" onclick="exportPosterJPG('poster-4', '海报4-记录管理')" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); margin-top: 8px;">导出 JPG</button>
+    </div>
+
+    <!-- 海报5：导入导出 -->
+    <div class="poster-wrapper">
+      <div class="poster poster-5" id="poster-5">
+        <div class="poster-inner">
+          <div class="header-section">
+            <div class="header-icon">
+              <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17,8 12,3 7,8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <h2 class="header-title">数据备份 · 安全无忧</h2>
+            <p class="header-desc">导入导出 Excel 文件，数据永久保存</p>
+          </div>
+
+          <div class="action-card">
+            <div class="action-card-header">
+              <div class="action-card-icon export">
+                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7,10 12,15 17,10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+              </div>
+              <div class="action-card-title">导出数据</div>
+            </div>
+            <p class="action-card-desc">一键导出 Excel 文件，包含完整信息</p>
+            <div class="format-tags">
+              <span class="format-tag">.xlsx 格式</span>
+              <span class="format-tag">手机分享</span>
+            </div>
+          </div>
+
+          <div class="action-card">
+            <div class="action-card-header">
+              <div class="action-card-icon import">
+                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="17,8 12,3 7,8"/>
+                  <line x1="12" y1="3" x2="12" y2="15"/>
+                </svg>
+              </div>
+              <div class="action-card-title">导入数据</div>
+            </div>
+            <p class="action-card-desc">导入 Excel 批量添加记录</p>
+            <div class="format-tags">
+              <span class="format-tag">批量导入</span>
+              <span class="format-tag">模板下载</span>
+            </div>
+          </div>
+
+          <div class="action-card">
+            <div class="action-card-header">
+              <div class="action-card-icon recycle">
+                <svg fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+                  <polyline points="3,6 5,6 21,6"/>
+                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                </svg>
+              </div>
+              <div class="action-card-title">回收站</div>
+            </div>
+            <p class="action-card-desc">误删记录可找回，数据有保障</p>
+            <div class="format-tags">
+              <span class="format-tag">恢复记录</span>
+              <span class="format-tag">彻底删除</span>
+            </div>
+          </div>
+
+          <div class="backup-hint">
+            <h4>
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10"/>
+                <line x1="12" y1="16" x2="12" y2="12"/>
+                <line x1="12" y1="8" x2="12.01" y2="8"/>
+              </svg>
+              温馨提示
+            </h4>
+            <p>建议定期导出备份，防止数据丢失</p>
+          </div>
+        </div>
+      </div>
+      <button class="export-btn" onclick="exportPoster('poster-5', '海报5-导入导出')">导出 PNG</button>
+      <button class="export-btn" onclick="exportPosterJPG('poster-5', '海报5-导入导出')" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); margin-top: 8px;">导出 JPG</button>
+    </div>
+
+    <!-- 海报6：安装指南 -->
+    <div class="poster-wrapper">
+      <div class="poster poster-6" id="poster-6">
+        <div class="poster-inner">
+          <div class="header-section">
+            <div class="platform-icons">
+              <div class="platform-icon">
+                <svg viewBox="0 0 24 24" fill="#1b1c1c">
+                  <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+                </svg>
+              </div>
+              <div class="platform-icon">
+                <svg viewBox="0 0 24 24" fill="#3DDC84">
+                  <path d="M17.523 15.341l1.665-2.883a.35.35 0 0 0-.128-.477.35.35 0 0 0-.477.128l-1.686 2.92c-1.382-.63-2.935-.982-4.597-.982s-3.215.352-4.597.982l-1.686-2.92a.35.35 0 0 0-.477-.128.35.35 0 0 0-.128.477l1.665 2.883C4.55 16.841 2.5 19.69 2.5 23h19c0-3.31-2.05-6.159-4.977-7.659M7 20.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2m10 0a1 1 0 1 1 0-2 1 1 0 0 1 0 2M6.25 8.24l-1.5-2.6a.35.35 0 0 1 .606-.35l1.52 2.633a8.64 8.64 0 0 1 7.248 0l1.52-2.633a.35.35 0 0 1 .606.35l-1.5 2.6C17.493 9.53 19 12.078 19 15H5c0-2.922 1.507-5.47 3.75-6.76"/>
+                </svg>
+              </div>
+              <div class="platform-icon">
+                <svg viewBox="0 0 24 24" fill="#4285F4">
+                  <circle cx="12" cy="12" r="10"/>
+                  <path fill="#fff" d="M12 6v6l4 2"/>
+                </svg>
+              </div>
+            </div>
+            <h2 class="header-title">多平台可用</h2>
+            <p class="header-desc">iOS · Android · 网页 一键安装</p>
+          </div>
+
+          <div class="install-section">
+            <div class="install-section-title">
+              <svg fill="#990f19" viewBox="0 0 24 24">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              iOS 用户安装
+            </div>
+            <div class="install-step">
+              <span class="step-num">1</span>
+              <span class="step-text">用 <strong>Safari</strong> 打开下方网址</span>
+            </div>
+            <div class="install-step">
+              <span class="step-num">2</span>
+              <span class="step-text">点击底部 <strong>分享按钮</strong> (方框↑)</span>
+            </div>
+            <div class="install-step">
+              <span class="step-num">3</span>
+              <span class="step-text">选择 <strong>"添加到主屏幕"</strong></span>
+            </div>
+            <div class="install-step">
+              <span class="step-num">4</span>
+              <span class="step-text">点击 <strong>"添加"</strong> 完成</span>
+            </div>
+          </div>
+
+          <div class="install-section">
+            <div class="install-section-title">
+              <svg fill="#3DDC84" viewBox="0 0 24 24">
+                <path d="M3 20.5v-17c0-.83.67-1.5 1.5-1.5h15c.83 0 1.5.67 1.5 1.5v17c0 .83-.67 1.5-1.5 1.5h-15c-.83 0-1.5-.67-1.5-1.5M12 5l-7 7h5v5h4v-5h5l-7-7z"/>
+              </svg>
+              Android 用户
+            </div>
+            <div class="install-step">
+              <span class="step-num" style="background: #3DDC84;">1</span>
+              <span class="step-text">下载 APK 安装包直接安装</span>
+            </div>
+            <div class="install-step">
+              <span class="step-num" style="background: #3DDC84;">2</span>
+              <span class="step-text">或用 Chrome 打开网址，点击菜单"添加到主屏幕"</span>
+            </div>
+            <div class="baidu-link">
+              <span>链接: <strong>pan.baidu.com/s/1q5EXMZmnJcgei64ZWRo-Pw</strong></span>
+              <span>提取码: <strong>1234</strong></span>
+            </div>
+          </div>
+
+          <div class="free-badge">
+            <h4>永久免费 · 无需注册</h4>
+            <p>网页版: gift.leevaluder.top</p>
+          </div>
+        </div>
+      </div>
+      <button class="export-btn" onclick="exportPoster('poster-6', '海报6-安装指南')">导出 PNG</button>
+      <button class="export-btn" onclick="exportPosterJPG('poster-6', '海报6-安装指南')" style="background: linear-gradient(135deg, #6b7280 0%, #4b5563 100%); margin-top: 8px;">导出 JPG</button>
+    </div>
+  </div>
+
+  <script>
+    // 导出单张海报为 PNG
+    async function exportPoster(posterId, filename) {
+      const poster = document.getElementById(posterId);
+      try {
+        const canvas = await html2canvas(poster, {
+          scale: 2, // 2倍分辨率
+          useCORS: true,
+          backgroundColor: null,
+          logging: false
+        });
+
+        const link = document.createElement('a');
+        link.download = filename + '.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+      } catch (error) {
+        console.error('导出失败:', error);
+        alert('导出失败，请重试');
+      }
+    }
+
+    // 导出单张海报为 JPG
+    async function exportPosterJPG(posterId, filename) {
+      const poster = document.getElementById(posterId);
+      try {
+        const canvas = await html2canvas(poster, {
+          scale: 2, // 2倍分辨率
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false
+        });
+
+        const link = document.createElement('a');
+        link.download = filename + '.jpg';
+        link.href = canvas.toDataURL('image/jpeg', 0.95);
+        link.click();
+      } catch (error) {
+        console.error('导出失败:', error);
+        alert('导出失败，请重试');
+      }
+    }
+
+    // 一键导出全部海报
+    async function exportAllPosters() {
+      const posters = [
+        { id: 'poster-1', name: '海报1-品牌主海报' },
+        { id: 'poster-2', name: '海报2-功能特点' },
+        { id: 'poster-3', name: '海报3-事由分类' },
+        { id: 'poster-4', name: '海报4-记录管理' },
+        { id: 'poster-5', name: '海报5-导入导出' },
+        { id: 'poster-6', name: '海报6-安装指南' }
+      ];
+
+      for (let i = 0; i < posters.length; i++) {
+        await exportPoster(posters[i].id, posters[i].name);
+        // 稍微延迟一下，避免浏览器阻止多次下载
+        if (i < posters.length - 1) {
+          await new Promise(resolve => setTimeout(resolve, 500));
+        }
+      }
+    }
+  </script>
+</body>
+</html>
