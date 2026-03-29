@@ -38,9 +38,7 @@
 ### Android 用户
 
 #### 方式一：安装 APK
-百度网盘下载：https://pan.baidu.com/s/1q5EXMZmnJcgei64ZWRo-Pw 提取码：`1234`
-
-（需要开启"允许安装未知来源应用"）
+[下载 APK](https://github.com/leevaluder-maker/gift-ledger/releases/download/V1.1.0/极简账本-v1.1.0-debug.apk)（需要开启"允许安装未知来源应用"）
 
 #### 方式二：PWA 安装
 1. 用 Chrome 打开 https://gift.leevaluder.top
