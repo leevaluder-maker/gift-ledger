@@ -1,6 +1,7 @@
 import { ref } from 'vue'
 
 const STORAGE_KEY = 'minimal_ledger_user_records'
+const RECYCLE_BIN_KEY = 'minimal_ledger_recycle_bin'
 
 /**
  * @typedef {import('../types/index.js').LedgerRecord} LedgerRecord
@@ -9,6 +10,7 @@ const STORAGE_KEY = 'minimal_ledger_user_records'
 
 // 单例状态 - 在函数外部定义，确保所有组件共享同一状态
 const records = ref(/** @type {LedgerRecord[]} */([]))
+const recycleBin = ref(/** @type {Array<LedgerRecord & { deletedAt: string }>} */([]))
 
 // 从localStorage加载用户数据
 const loadRecords = () => {
@@ -25,13 +27,34 @@ const loadRecords = () => {
   }
 }
 
+// 从localStorage加载回收站数据
+const loadRecycleBin = () => {
+  const stored = localStorage.getItem(RECYCLE_BIN_KEY)
+  if (stored) {
+    try {
+      recycleBin.value = JSON.parse(stored)
+    } catch (e) {
+      console.error('Failed to parse recycle bin:', e)
+      recycleBin.value = []
+    }
+  } else {
+    recycleBin.value = []
+  }
+}
+
 // 保存用户数据到localStorage
 const saveRecords = () => {
   localStorage.setItem(STORAGE_KEY, JSON.stringify(records.value))
 }
 
+// 保存回收站数据到localStorage
+const saveRecycleBin = () => {
+  localStorage.setItem(RECYCLE_BIN_KEY, JSON.stringify(recycleBin.value))
+}
+
 // 初始化加载（只执行一次）
 loadRecords()
+loadRecycleBin()
 
 export function useRecordStore() {
   /**
@@ -97,18 +120,80 @@ export function useRecordStore() {
   }
 
   /**
-   * 删除记录
+   * 删除记录（移入回收站）
    * @param {string} id
    * @returns {boolean}
    */
   const deleteRecord = (id) => {
     const index = records.value.findIndex(record => record.id === id)
     if (index !== -1) {
+      const record = records.value[index]
+      // 移入回收站
+      recycleBin.value.unshift({
+        ...record,
+        deletedAt: new Date().toISOString()
+      })
+      saveRecycleBin()
+      // 从主列表移除
       records.value.splice(index, 1)
       saveRecords()
       return true
     }
     return false
+  }
+
+  /**
+   * 从回收站恢复记录
+   * @param {string} id
+   * @returns {boolean}
+   */
+  const restoreRecord = (id) => {
+    const index = recycleBin.value.findIndex(record => record.id === id)
+    if (index !== -1) {
+      const record = recycleBin.value[index]
+      // 移除删除时间标记
+      const { deletedAt, ...originalRecord } = record
+      // 恢复到主列表
+      records.value.unshift(originalRecord)
+      saveRecords()
+      // 从回收站移除
+      recycleBin.value.splice(index, 1)
+      saveRecycleBin()
+      return true
+    }
+    return false
+  }
+
+  /**
+   * 永久删除记录（从回收站）
+   * @param {string} id
+   * @returns {boolean}
+   */
+  const permanentDeleteRecord = (id) => {
+    const index = recycleBin.value.findIndex(record => record.id === id)
+    if (index !== -1) {
+      recycleBin.value.splice(index, 1)
+      saveRecycleBin()
+      return true
+    }
+    return false
+  }
+
+  /**
+   * 清空回收站
+   * @returns {void}
+   */
+  const clearRecycleBin = () => {
+    recycleBin.value = []
+    saveRecycleBin()
+  }
+
+  /**
+   * 获取回收站记录
+   * @returns {Array<LedgerRecord & { deletedAt: string }>}
+   */
+  const getRecycleBinRecords = () => {
+    return recycleBin.value
   }
 
   /**
@@ -210,12 +295,17 @@ export function useRecordStore() {
 
   return {
     records,
+    recycleBin,
     getAllRecords,
     getRecordById,
     searchRecords,
     addRecord,
     updateRecord,
     deleteRecord,
+    restoreRecord,
+    permanentDeleteRecord,
+    clearRecycleBin,
+    getRecycleBinRecords,
     toggleStatus,
     getStatistics,
     getPersonSummaries,

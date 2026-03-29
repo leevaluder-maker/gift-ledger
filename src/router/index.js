@@ -20,6 +20,11 @@ const routes = [
     path: '/record/:id',
     name: 'RecordDetail',
     component: RecordDetail
+  },
+  {
+    path: '/recycle-bin',
+    name: 'RecycleBin',
+    component: () => import('../views/RecycleBin.vue')
   }
 ]
 

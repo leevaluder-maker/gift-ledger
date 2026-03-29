@@ -1,17 +1,19 @@
 <script setup>
 import { ref, computed } from 'vue'
-import { PlusCircle, Share2, Wallet, ChevronRight, X, CalendarIcon } from 'lucide-vue-next'
+import { PlusCircle, Share2, Wallet, ChevronRight, X, CalendarIcon, FileSpreadsheet } from 'lucide-vue-next'
 import { useRecordStore } from '../stores/recordStore'
 import { useCustomOccasionsStore } from '../stores/customOccasionsStore'
 import { Share } from '@capacitor/share'
 import { Filesystem, Directory } from '@capacitor/filesystem'
 import * as XLSX from 'xlsx'
+import ExcelImport from './ExcelImport.vue'
 
 const recordStore = useRecordStore()
 const customOccasionsStore = useCustomOccasionsStore()
 const { occasionCategoriesWithCustom, addCustomOccasion } = customOccasionsStore
 
 const showAddForm = ref(false)
+const showExcelImport = ref(false)
 
 // 表单数据
 const amount = ref('')
@@ -248,14 +250,30 @@ const closeAddForm = () => {
         <PlusCircle :size="26" />
         一键记账
       </button>
-      <button
-        @click="exportData"
-        class="w-full h-14 sm:h-16 bg-[#f0eded] hover:bg-[#eae7e7] text-[#1b1c1c] text-base sm:text-lg font-bold flex items-center justify-center gap-2 rounded-2xl transition-all active:scale-95"
-      >
-        <Share2 :size="20" />
-        导出数据
-      </button>
+      <div class="grid grid-cols-2 gap-3 sm:gap-4">
+        <button
+          @click="showExcelImport = true"
+          class="h-14 sm:h-16 bg-[#ffdad7] hover:bg-[#ffcfc9] text-[#990f19] text-base sm:text-lg font-bold flex items-center justify-center gap-2 rounded-2xl transition-all active:scale-95"
+        >
+          <FileSpreadsheet :size="20" />
+          导入
+        </button>
+        <button
+          @click="exportData"
+          class="h-14 sm:h-16 bg-[#f0eded] hover:bg-[#eae7e7] text-[#1b1c1c] text-base sm:text-lg font-bold flex items-center justify-center gap-2 rounded-2xl transition-all active:scale-95"
+        >
+          <Share2 :size="20" />
+          导出
+        </button>
+      </div>
     </div>
+
+    <!-- Excel Import Dialog -->
+    <ExcelImport
+      v-if="showExcelImport"
+      @close="showExcelImport = false"
+      @imported="showExcelImport = false"
+    />
 
     <!-- Tips & Info -->
     <div class="space-y-3 sm:space-y-4">

@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
-import { Search, SlidersHorizontal, X, Trash2, Edit } from 'lucide-vue-next'
+import { Search, SlidersHorizontal, X, Trash2, Edit, Trash } from 'lucide-vue-next'
 import { useRecordStore } from '../stores/recordStore'
 import { useCustomOccasionsStore } from '../stores/customOccasionsStore'
 
@@ -23,9 +23,6 @@ const filterCategory = ref(null)
 const filterOccasion = ref(null)
 const filterStatus = ref(null)
 
-const showDeleteConfirm = ref(false)
-const recordToDelete = ref(null)
-
 const tmpCategory = ref(null)
 const tmpOccasion = ref(null)
 const tmpStatus = ref(null)
@@ -36,6 +33,9 @@ onMounted(() => {
 })
 
 const allRecords = computed(() => recordStore.getAllRecords())
+
+// 回收站记录数量
+const recycleBinCount = computed(() => recordStore.recycleBin.value.length)
 
 const subItemsForTmp = computed(() => {
   if (!tmpCategory.value) return []
@@ -138,20 +138,26 @@ const formatDate = (dateStr) => {
 }
 
 const confirmDelete = (record) => {
-  recordToDelete.value = record
-  showDeleteConfirm.value = true
-}
-
-const deleteRecord = () => {
-  if (recordToDelete.value) {
-    recordStore.deleteRecord(recordToDelete.value.id)
-    showDeleteConfirm.value = false
-    recordToDelete.value = null
-  }
+  // 一键删除，直接移入回收站，不需要确认
+  recordStore.deleteRecord(record.id)
 }
 
 const goToDetail = (record) => {
   router.push(`/record/${record.id}`)
+}
+
+const goToRecycleBin = () => {
+  router.push('/recycle-bin')
+}
+
+// 一键清空所有记录（移入回收站）
+const clearAllRecords = () => {
+  if (allRecords.value.length === 0) return
+  if (confirm(`确定要将全部 ${allRecords.value.length} 条记录移入回收站吗？`)) {
+    allRecords.value.forEach(record => {
+      recordStore.deleteRecord(record.id)
+    })
+  }
 }
 </script>
 
@@ -192,22 +198,50 @@ const goToDetail = (record) => {
       </button>
     </div>
 
-    <!-- 排序切换 -->
-    <div class="flex gap-2">
-      <button
-        @click="sortMode = 'date'"
-        class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all active:scale-95"
-        :class="sortMode === 'date' ? 'bg-[#1b1c1c] text-white' : 'bg-[#f0eded] text-[#5a403e]'"
-      >
-        时间排序
-      </button>
-      <button
-        @click="sortMode = 'name'"
-        class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all active:scale-95"
-        :class="sortMode === 'name' ? 'bg-[#1b1c1c] text-white' : 'bg-[#f0eded] text-[#5a403e]'"
-      >
-        名字排序
-      </button>
+    <!-- 排序切换 + 清空 + 回收站 -->
+    <div class="flex gap-2 items-center justify-between">
+      <div class="flex gap-2">
+        <button
+          @click="sortMode = 'date'"
+          class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all active:scale-95"
+          :class="sortMode === 'date' ? 'bg-[#1b1c1c] text-white' : 'bg-[#f0eded] text-[#5a403e]'"
+        >
+          时间排序
+        </button>
+        <button
+          @click="sortMode = 'name'"
+          class="px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all active:scale-95"
+          :class="sortMode === 'name' ? 'bg-[#1b1c1c] text-white' : 'bg-[#f0eded] text-[#5a403e]'"
+        >
+          名字排序
+        </button>
+      </div>
+      <div class="flex gap-2">
+        <!-- 一键清空 -->
+        <button
+          v-if="allRecords.length > 0"
+          @click="clearAllRecords"
+          class="flex items-center gap-1 px-3 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all active:scale-95 bg-red-100 text-red-600"
+        >
+          <Trash2 :size="14" />
+          <span class="hidden sm:inline">清空</span>
+        </button>
+        <!-- 回收站入口 -->
+        <button
+          @click="goToRecycleBin"
+          class="flex items-center gap-1 px-3 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold transition-all active:scale-95 relative"
+          :class="recycleBinCount > 0 ? 'bg-red-100 text-red-600' : 'bg-[#f0eded] text-[#5a403e]'"
+        >
+          <Trash :size="14" />
+          <span class="hidden sm:inline">回收站</span>
+          <span
+            v-if="recycleBinCount > 0"
+            class="absolute -top-1 -right-1 w-4 h-4 sm:w-5 sm:h-5 bg-red-500 text-white text-[10px] sm:text-xs rounded-full flex items-center justify-center font-bold"
+          >
+            {{ recycleBinCount > 9 ? '9+' : recycleBinCount }}
+          </span>
+        </button>
+      </div>
     </div>
 
     <!-- 已选筛选chips -->
@@ -387,45 +421,6 @@ const goToDetail = (record) => {
           </div>
         </div>
       </Transition>
-    </Teleport>
-
-    <!-- 删除确认弹窗 -->
-    <Teleport to="body">
-      <div
-        v-if="showDeleteConfirm"
-        class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
-        @click.self="showDeleteConfirm = false"
-      >
-        <div class="bg-white rounded-2xl w-full max-w-sm p-5 sm:p-6 space-y-4 sm:space-y-6">
-          <div class="text-center">
-            <div class="w-12 h-12 sm:w-16 sm:h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-3 sm:mb-4">
-              <Trash2 class="text-red-500" :size="24" />
-              <Trash2 class="text-red-500 hidden sm:block" :size="32" />
-            </div>
-            <h3 class="text-lg sm:text-xl font-black mb-2">确认删除?</h3>
-            <p class="text-sm sm:text-base text-[#5a403e]">
-              删除 {{ recordToDelete?.name }} 的<br/>
-              <span class="text-[#990f19] font-bold">{{ recordToDelete?.occasion }}</span>
-              收礼记录<br/>
-              金额: <span class="font-bold">¥{{ recordToDelete?.amount?.toLocaleString() }}</span>
-            </p>
-          </div>
-          <div class="flex gap-2 sm:gap-3">
-            <button
-              @click="showDeleteConfirm = false"
-              class="flex-1 h-12 sm:h-14 bg-[#f0eded] text-[#1b1c1c] font-bold rounded-xl transition-all active:scale-95 text-sm sm:text-base"
-            >
-              取消
-            </button>
-            <button
-              @click="deleteRecord"
-              class="flex-1 h-12 sm:h-14 bg-red-500 text-white font-bold rounded-xl transition-all active:scale-95 text-sm sm:text-base"
-            >
-              确认删除
-            </button>
-          </div>
-        </div>
-      </div>
     </Teleport>
   </div>
 </template>

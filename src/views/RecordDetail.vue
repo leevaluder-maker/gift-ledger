@@ -13,7 +13,6 @@ const customOccasionsStore = useCustomOccasionsStore()
 const { occasionCategoriesWithCustom, addCustomOccasion } = customOccasionsStore
 
 const record = ref(null)
-const showDeleteConfirm = ref(false)
 
 // 获取事由分类名称
 const getCategoryLabel = (occasionType) => {
@@ -156,11 +155,8 @@ const cancelEdit = () => {
 
 const deleteRecord = () => {
   if (record.value) {
-    const success = recordStore.deleteRecord(record.value.id)
-    if (success) {
-      router.push('/records')
-    }
-    showDeleteConfirm.value = false
+    recordStore.deleteRecord(record.value.id)
+    router.push('/records')
   }
 }
 
@@ -246,7 +242,7 @@ onMounted(() => {
 
           <button
             class="w-full h-12 sm:h-16 bg-red-100 text-red-600 text-base sm:text-xl font-black rounded-2xl active:scale-95 transition-transform"
-            @click="showDeleteConfirm = true"
+            @click="deleteRecord"
           >
             删除记录
           </button>
@@ -257,28 +253,6 @@ onMounted(() => {
         加载中...
       </div>
     </main>
-
-    <!-- Delete Confirmation Dialog -->
-    <div v-if="showDeleteConfirm" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 sm:p-6">
-      <div class="bg-white rounded-2xl p-5 sm:p-8 w-full max-w-md">
-        <h3 class="text-xl sm:text-2xl font-black mb-3 sm:mb-4">确认删除</h3>
-        <p class="text-sm sm:text-base text-[#5a403e] mb-6 sm:mb-8">确定要删除这条记录吗？删除后无法恢复。</p>
-        <div class="flex gap-3 sm:gap-4">
-          <button
-            @click="showDeleteConfirm = false"
-            class="flex-1 h-12 sm:h-14 bg-[#f0eded] text-[#1b1c1c] font-bold rounded-xl text-sm sm:text-base"
-          >
-            取消
-          </button>
-          <button
-            @click="deleteRecord"
-            class="flex-1 h-12 sm:h-14 bg-red-600 text-white font-bold rounded-xl text-sm sm:text-base"
-          >
-            删除
-          </button>
-        </div>
-      </div>
-    </div>
 
     <!-- Edit Modal -->
     <div v-if="showEditModal" class="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
