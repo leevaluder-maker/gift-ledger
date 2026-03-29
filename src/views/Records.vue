@@ -154,8 +154,10 @@ const goToRecycleBin = () => {
 const clearAllRecords = () => {
   if (allRecords.value.length === 0) return
   if (confirm(`确定要将全部 ${allRecords.value.length} 条记录移入回收站吗？`)) {
-    allRecords.value.forEach(record => {
-      recordStore.deleteRecord(record.id)
+    // 先复制所有 ID，避免迭代过程中数组变化
+    const ids = allRecords.value.map(record => record.id)
+    ids.forEach(id => {
+      recordStore.deleteRecord(id)
     })
   }
 }
