@@ -83,38 +83,25 @@ const exportData = async () => {
   const isNative = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()
 
   if (isNative) {
-    // 手机端：保存到 Documents 目录
+    // 手机端：先保存到缓存，再用分享让用户选择保存位置
     try {
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
-      await Filesystem.writeFile({
+      const result = await Filesystem.writeFile({
         path: filename,
         data: wbout,
-        directory: Directory.Documents,
+        directory: Directory.Cache,
       })
-      alert(`导出成功\n\n文件位置：\nDocuments/${filename}\n\n可在文件管理器中查看`)
+      await Share.share({
+        title: '保存导出文件',
+        text: '礼金账本数据备份',
+        url: result.uri,
+        dialogTitle: '保存导出文件',
+      })
     } catch (e) {
-      console.log('Documents 保存失败，尝试分享:', e)
-      // 如果 Documents 失败，尝试分享方式
-      try {
-        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
-        const result = await Filesystem.writeFile({
-          path: filename,
-          data: wbout,
-          directory: Directory.Cache,
-        })
-        await Share.share({
-          title: '导出礼金记录',
-          text: '礼金账本数据备份',
-          url: result.uri,
-          dialogTitle: '导出礼金记录',
-        })
-        // 分享成功或用户取消，都不显示错误
-      } catch (shareError) {
-        console.log('分享结果:', shareError)
-        // 用户取消分享不报错，只有真正失败才报错
-        if (shareError && shareError.message && !shareError.message.includes('cancel')) {
-          alert('导出失败，请重试')
-        }
+      console.log('分享结果:', e)
+      // 用户取消分享不报错
+      if (e && e.message && !e.message.includes('cancel')) {
+        alert('导出失败，请重试')
       }
     }
   } else {
