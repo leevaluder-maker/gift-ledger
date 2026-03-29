@@ -38,7 +38,9 @@
 ### Android 用户
 
 #### 方式一：安装 APK
-下载 APK 文件直接安装（需要开启"允许安装未知来源应用"）
+百度网盘下载：https://pan.baidu.com/s/1q5EXMZmnJcgei64ZWRo-Pw 提取码：`1234`
+
+（需要开启"允许安装未知来源应用"）
 
 #### 方式二：PWA 安装
 1. 用 Chrome 打开 https://gift.leevaluder.top
