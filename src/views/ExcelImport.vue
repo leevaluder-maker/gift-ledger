@@ -4,6 +4,7 @@ import { FileSpreadsheet, Upload, X, Loader2, AlertCircle, CheckCircle, Download
 import { useRecordStore } from '../stores/recordStore'
 import { useCustomOccasionsStore } from '../stores/customOccasionsStore'
 import { Filesystem, Directory } from '@capacitor/filesystem'
+import { Share } from '@capacitor/share'
 import * as XLSX from 'xlsx'
 
 const emit = defineEmits(['close', 'imported'])
@@ -50,18 +51,37 @@ const downloadTemplate = async () => {
   const isNative = typeof window !== 'undefined' && window.Capacitor?.isNativePlatform?.()
 
   if (isNative) {
-    // 移动端：使用 Capacitor Filesystem API
+    // 移动端：先保存文件，再调用分享
     try {
       const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
-      await Filesystem.writeFile({
+      const result = await Filesystem.writeFile({
         path: filename,
         data: wbout,
-        directory: Directory.Documents,
+        directory: Directory.Cache,  // 使用 Cache 目录，分享后可以清理
       })
-      alert(`模板已保存到：Documents/${filename}`)
+
+      // 调用系统分享，让用户选择保存位置
+      await Share.share({
+        title: '导入模板',
+        text: '礼金账本导入模板',
+        url: result.uri,
+        dialogTitle: '保存模板',
+      })
     } catch (e) {
-      console.error('保存模板失败:', e)
-      alert('下载模板失败，请重试')
+      console.error('分享模板失败:', e)
+      // 如果分享失败，尝试直接保存到 Documents
+      try {
+        const wbout = XLSX.write(wb, { bookType: 'xlsx', type: 'base64' })
+        await Filesystem.writeFile({
+          path: filename,
+          data: wbout,
+          directory: Directory.Documents,
+        })
+        alert(`模板已保存到：Documents/${filename}`)
+      } catch (e2) {
+        console.error('保存模板失败:', e2)
+        alert('下载模板失败，请重试')
+      }
     }
   } else {
     // Web 浏览器：使用 Blob 下载
@@ -119,6 +139,7 @@ const handleFileUpload = (event) => {
             if (cellStr.includes('姓名')) headerMap.name = colIndex
             else if (cellStr.includes('金额')) headerMap.amount = colIndex
             else if (cellStr.includes('事由') && !cellStr.includes('分类')) headerMap.occasion = colIndex
+            else if (cellStr.includes('分类') || cellStr.includes('事由分类')) headerMap.occasionType = colIndex
             else if (cellStr.includes('日期')) headerMap.date = colIndex
             else if (cellStr.includes('地址')) headerMap.address = colIndex
             else if (cellStr.includes('还礼') || cellStr.includes('状态')) headerMap.status = colIndex
@@ -173,6 +194,7 @@ const parseRowToObject = (row, headerMap) => {
   let name = getCell('name')
   let amount = getCell('amount')
   let occasion = getCell('occasion')
+  let occasionTypeRaw = getCell('occasionType')  // 从表格读取事由分类
   let dateRaw = getCell('date')
   let address = getCell('address')
   let status = getCell('status')
@@ -203,7 +225,28 @@ const parseRowToObject = (row, headerMap) => {
   }
 
   // 处理事由和分类
-  const { matchedOccasion, matchedType } = matchOccasion(occasion || '')
+  let matchedOccasion = occasion || '其他'
+  let matchedType = 'other'
+
+  // 如果表格中有事由分类，优先使用
+  if (occasionTypeRaw) {
+    const typeStr = String(occasionTypeRaw).trim()
+    // 匹配分类类型
+    if (typeStr.includes('红') || typeStr.toLowerCase().includes('red')) {
+      matchedType = 'red'
+    } else if (typeStr.includes('白') || typeStr.toLowerCase().includes('white')) {
+      matchedType = 'white'
+    } else if (typeStr.includes('寿') || typeStr.includes('生日') || typeStr.toLowerCase().includes('birthday')) {
+      matchedType = 'birthday'
+    } else if (typeStr.includes('其他') || typeStr.toLowerCase().includes('other')) {
+      matchedType = 'other'
+    }
+  } else {
+    // 如果表格中没有事由分类，根据事由自动匹配
+    const matchResult = matchOccasion(occasion || '')
+    matchedOccasion = matchResult.matchedOccasion
+    matchedType = matchResult.matchedType
+  }
 
   // 处理状态
   let statusValue = 'pending'
@@ -218,7 +261,7 @@ const parseRowToObject = (row, headerMap) => {
     name: String(name).trim(),
     amount: parseFloat(amount),
     date: date,
-    occasion: matchedOccasion || '其他',
+    occasion: matchedOccasion,
     occasionType: matchedType,
     status: statusValue,
     type: 'received',

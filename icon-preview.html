@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>礼金记账 - 图标预览</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+            color: white;
+        }
+        .container { max-width: 1000px; margin: 0 auto; }
+        h1 { text-align: center; margin-bottom: 10px; font-size: 2rem; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 40px; }
+
+        .preview-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 20px;
+            margin-bottom: 50px;
+        }
+        .preview-item {
+            background: rgba(255,255,255,0.05);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+        .preview-item img {
+            border-radius: 22.5%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            margin-bottom: 10px;
+        }
+        .preview-item p {
+            font-size: 12px;
+            color: #888;
+        }
+
+        .phone-mockup {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+            margin-bottom: 50px;
+        }
+        .phone {
+            width: 280px;
+            height: 560px;
+            background: #000;
+            border-radius: 40px;
+            padding: 20px;
+            position: relative;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.5);
+        }
+        .phone-screen {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #2a2a3e 0%, #1a1a2e 100%);
+            border-radius: 24px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 20px;
+        }
+        .phone-label {
+            position: absolute;
+            bottom: -30px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #888;
+            font-size: 14px;
+        }
+
+        .icon-on-phone {
+            width: 80px;
+            height: 80px;
+            border-radius: 22.5%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+        }
+        .app-name {
+            font-size: 14px;
+            margin-top: 8px;
+        }
+
+        .section-title {
+            font-size: 1.2rem;
+            margin-bottom: 20px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .success-box {
+            background: rgba(34, 197, 94, 0.1);
+            border: 1px solid rgba(34, 197, 94, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+        .success-box h3 { color: #22c55e; margin-bottom: 10px; }
+        .success-box code {
+            background: rgba(0,0,0,0.3);
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-family: monospace;
+        }
+        .success-box pre {
+            background: rgba(0,0,0,0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 10px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>极简账本 App 图标</h1>
+        <p class="subtitle">基于墨刀设计 · 已生成全部尺寸</p>
+
+        <h2 class="section-title">手机预览效果</h2>
+        <div class="phone-mockup">
+            <div class="phone">
+                <div class="phone-screen">
+                    <img src="public/icons/icon-192x192.png" class="icon-on-phone" alt="App Icon">
+                    <span class="app-name">极简账本</span>
+                </div>
+                <span class="phone-label">Android</span>
+            </div>
+            <div class="phone">
+                <div class="phone-screen" style="background: linear-gradient(180deg, #f5f5f7 0%, #e8e8ed 100%);">
+                    <img src="public/icons/icon-192x192.png" class="icon-on-phone" alt="App Icon">
+                    <span class="app-name" style="color: #333;">礼金记账</span>
+                </div>
+                <span class="phone-label">iOS (未来支持)</span>
+            </div>
+        </div>
+
+        <h2 class="section-title">Android 图标尺寸</h2>
+        <div class="preview-grid">
+            <div class="preview-item">
+                <img src="android/app/src/main/res/mipmap-mdpi/ic_launcher.png" width="48" height="48" alt="48px">
+                <p>mdpi<br>48×48</p>
+            </div>
+            <div class="preview-item">
+                <img src="android/app/src/main/res/mipmap-hdpi/ic_launcher.png" width="72" height="72" alt="72px">
+                <p>hdpi<br>72×72</p>
+            </div>
+            <div class="preview-item">
+                <img src="android/app/src/main/res/mipmap-xhdpi/ic_launcher.png" width="96" height="96" alt="96px">
+                <p>xhdpi<br>96×96</p>
+            </div>
+            <div class="preview-item">
+                <img src="android/app/src/main/res/mipmap-xxhdpi/ic_launcher.png" width="144" height="144" alt="144px">
+                <p>xxhdpi<br>144×144</p>
+            </div>
+            <div class="preview-item">
+                <img src="android/app/src/main/res/mipmap-xxxhdpi/ic_launcher.png" width="192" height="192" alt="192px">
+                <p>xxxhdpi<br>192×192</p>
+            </div>
+        </div>
+
+        <h2 class="section-title">Web / PWA 图标</h2>
+        <div class="preview-grid">
+            <div class="preview-item">
+                <img src="public/icons/icon-192x192.png" width="64" height="64" alt="192px">
+                <p>PWA<br>192×192</p>
+            </div>
+            <div class="preview-item">
+                <img src="public/icons/icon-512x512.png" width="96" height="96" alt="512px">
+                <p>PWA<br>512×512</p>
+            </div>
+            <div class="preview-item">
+                <img src="public/apple-touch-icon.png" width="64" height="64" alt="180px">
+                <p>Apple Touch<br>180×180</p>
+            </div>
+        </div>
+
+        <div class="success-box">
+            <h3>✅ 图标已成功生成并集成！</h3>
+            <p>以下文件已更新：</p>
+            <pre>
+android/app/src/main/res/mipmap-*/ic_launcher.png       (Android 普通图标)
+android/app/src/main/res/mipmap-*/ic_launcher_round.png  (Android 圆形图标)
+android/app/src/main/res/mipmap-*/ic_launcher_foreground.png (自适应图标前景)
+android/app/src/main/res/drawable/ic_launcher_background.xml (自适应图标背景)
+public/icons/icon-*.png                                   (Web/PWA 图标)
+            </pre>
+            <p style="margin-top: 15px;">应用名称已更新为 <code>极简账本</code></p>
+            <p style="margin-top: 15px;">下一步：重新构建 Android 应用即可看到新图标！</p>
+            <pre>npm run build && npx cap sync android</pre>
+        </div>
+    </div>
+</body>
+</html>
