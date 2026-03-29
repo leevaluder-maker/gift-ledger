@@ -94,7 +94,7 @@ npm run build
 - 应用完全离线可用
 - 支持导出 Excel 备份
 
-## 应用截图
+## 宣传海报
 
 <div align="center">
   <img src="public/posters/海报1-品牌主海报.png" alt="品牌主海报" width="300"/>
