@@ -1,5 +1,12 @@
 apply plugin: 'com.android.application'
 
+// 从 package.json 读取版本号
+def packageJson = new File(rootProject.projectDir.parent, 'package.json')
+def versionData = new groovy.json.JsonSlurper().parseText(packageJson.text)
+def appVersion = versionData.version
+def versionParts = appVersion.split('\\.')
+def versionCodeNum = versionParts[0].toInteger() * 10000 + versionParts[1].toInteger() * 100 + (versionParts.length > 2 ? versionParts[2].toInteger() : 0)
+
 android {
     namespace = "com.minimal.ledger"
     compileSdk = rootProject.ext.compileSdkVersion
@@ -7,8 +14,8 @@ android {
         applicationId "com.minimal.ledger"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "1.0"
+        versionCode versionCodeNum
+        versionName appVersion
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         aaptOptions {
              // Files and dirs to omit from the packaged assets dir, modified to accommodate modern web apps.
@@ -20,6 +27,17 @@ android {
         release {
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+
+    // 自定义 APK 输出文件名
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            def appName = "极简账本"
+            def versionName = variant.versionName
+            def buildType = variant.buildType.name
+            def date = new Date().format("yyyyMMdd")
+            outputFileName = "${appName}-v${versionName}-${buildType}.apk"
         }
     }
 }
